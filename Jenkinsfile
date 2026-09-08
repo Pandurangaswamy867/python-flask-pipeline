@@ -1,3 +1,4 @@
+```groovy
 pipeline {
     agent any
 
@@ -17,7 +18,12 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
+                echo "Building Docker image..."
+
                 docker build -t $IMAGE_NAME:$IMAGE_TAG .
+
+                echo "Docker image built successfully:"
+                docker images $IMAGE_NAME
                 '''
             }
         }
@@ -25,15 +31,47 @@ pipeline {
         stage('Test Container') {
             steps {
                 sh '''
-                docker run -d --name test-container -p 5000:5000 $IMAGE_NAME:$IMAGE_TAG
+                set -e
 
+                echo "Cleaning previous test container..."
+
+                docker stop test-container || true
+                docker rm test-container || true
+
+                echo "Starting test container..."
+
+                docker run -d \
+                    --name test-container \
+                    $IMAGE_NAME:$IMAGE_TAG
+
+                echo "Waiting for application to start..."
                 sleep 10
 
-                docker ps
+                echo "Checking container status..."
 
-                docker stop test-container
-                docker rm test-container
+                docker ps -a
+
+                echo "Testing Flask application inside container..."
+
+                docker exec test-container \
+                    python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:5000/health').read().decode())"
+
+                echo "Application test successful."
+
+                echo "Removing test container..."
+
+                docker stop test-container || true
+                docker rm test-container || true
                 '''
+            }
+
+            post {
+                always {
+                    sh '''
+                    docker stop test-container || true
+                    docker rm test-container || true
+                    '''
+                }
             }
         }
 
@@ -47,7 +85,9 @@ pipeline {
                     )
                 ]) {
                     sh '''
-                    echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+                    echo "$DOCKER_PASS" | docker login \
+                        -u "$DOCKER_USER" \
+                        --password-stdin
                     '''
                 }
             }
@@ -56,9 +96,17 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 sh '''
+                echo "Pushing versioned image..."
+
                 docker push $IMAGE_NAME:$IMAGE_TAG
 
-                docker tag $IMAGE_NAME:$IMAGE_TAG $IMAGE_NAME:latest
+                echo "Creating latest tag..."
+
+                docker tag \
+                    $IMAGE_NAME:$IMAGE_TAG \
+                    $IMAGE_NAME:latest
+
+                echo "Pushing latest image..."
 
                 docker push $IMAGE_NAME:latest
                 '''
@@ -68,19 +116,56 @@ pipeline {
         stage('Deploy Application') {
             steps {
                 sh '''
+                set -e
+
+                echo "======================================"
+                echo "Stopping old application container"
+                echo "======================================"
+
                 docker stop flask-app || true
+
+                echo "Removing old application container..."
+
                 docker rm flask-app || true
 
+                echo "======================================"
+                echo "Starting new application"
+                echo "======================================"
+
                 docker run -d \
-                --name flask-app \
-                -p 5000:5000 \
-                $IMAGE_NAME:$IMAGE_TAG
+                    --name flask-app \
+                    -p 5000:5000 \
+                    --restart unless-stopped \
+                    $IMAGE_NAME:$IMAGE_TAG
+
+                echo "New application started."
+
+                echo "Waiting for application..."
+                sleep 10
+
+                echo "======================================"
+                echo "Container Status"
+                echo "======================================"
+
+                docker ps
+
+                echo "======================================"
+                echo "Health Check"
+                echo "======================================"
+
+                curl -f http://localhost:5000/health
+
+                echo ""
+                echo "======================================"
+                echo "Deployment Successful"
+                echo "======================================"
                 '''
             }
         }
     }
 
     post {
+
         success {
             echo 'CI/CD Pipeline Completed Successfully'
         }
@@ -90,7 +175,15 @@ pipeline {
         }
 
         always {
-            sh 'docker image prune -f || true'
+            sh '''
+            echo "Cleaning unused Docker resources..."
+
+            docker stop test-container || true
+            docker rm test-container || true
+
+            docker image prune -f || true
+            '''
         }
     }
 }
+```
