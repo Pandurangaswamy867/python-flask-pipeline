@@ -1,7 +1,6 @@
 pipeline {
 agent any
 
-```
 environment {
     IMAGE_NAME = "pandu867/bubu-flaskapp"
     IMAGE_TAG = "${BUILD_NUMBER}"
@@ -119,6 +118,5 @@ post {
         '''
     }
 }
-```
 
 }
