@@ -1,4 +1,7 @@
-```groovy
+
+Use the following **exact content** in your GitHub `Jenkinsfile` — copy from `pipeline {` to the final `}` only:
+
+:::writing{variant="document" id="31467" title="Jenkinsfile"}
 pipeline {
     agent any
 
@@ -22,7 +25,7 @@ pipeline {
 
                 docker build -t $IMAGE_NAME:$IMAGE_TAG .
 
-                echo "Docker image built successfully:"
+                echo "Docker image built successfully"
                 docker images $IMAGE_NAME
                 '''
             }
@@ -44,19 +47,18 @@ pipeline {
                     --name test-container \
                     $IMAGE_NAME:$IMAGE_TAG
 
-                echo "Waiting for application to start..."
+                echo "Waiting for Flask application..."
                 sleep 10
 
-                echo "Checking container status..."
-
+                echo "Container status:"
                 docker ps -a
 
-                echo "Testing Flask application inside container..."
+                echo "Testing Flask health endpoint..."
 
                 docker exec test-container \
                     python -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:5000/health').read().decode())"
 
-                echo "Application test successful."
+                echo "Application test successful"
 
                 echo "Removing test container..."
 
@@ -96,11 +98,11 @@ pipeline {
         stage('Push Docker Image') {
             steps {
                 sh '''
-                echo "Pushing versioned image..."
+                echo "Pushing image..."
 
                 docker push $IMAGE_NAME:$IMAGE_TAG
 
-                echo "Creating latest tag..."
+                echo "Tagging image as latest..."
 
                 docker tag \
                     $IMAGE_NAME:$IMAGE_TAG \
@@ -119,12 +121,12 @@ pipeline {
                 set -e
 
                 echo "======================================"
-                echo "Stopping old application container"
+                echo "Stopping old application"
                 echo "======================================"
 
                 docker stop flask-app || true
 
-                echo "Removing old application container..."
+                echo "Removing old application..."
 
                 docker rm flask-app || true
 
@@ -138,7 +140,7 @@ pipeline {
                     --restart unless-stopped \
                     $IMAGE_NAME:$IMAGE_TAG
 
-                echo "New application started."
+                echo "New application started"
 
                 echo "Waiting for application..."
                 sleep 10
@@ -176,14 +178,39 @@ pipeline {
 
         always {
             sh '''
-            echo "Cleaning unused Docker resources..."
+            echo "Cleaning test container..."
 
             docker stop test-container || true
             docker rm test-container || true
+
+            echo "Cleaning unused Docker images..."
 
             docker image prune -f || true
             '''
         }
     }
 }
-```
+:::
+
+### One more thing
+
+Don't copy the `:::writing...` lines either. Those are just formatting from this chat.
+
+Your GitHub file should literally look like:
+
+```text
+pipeline {
+    agent any
+
+    environment {
+        ...
+    }
+
+    stages {
+        ...
+    }
+
+    post {
+        ...
+    }
+}
