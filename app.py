@@ -1,254 +1,1071 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, render_template_string
+from datetime import datetime
 
 app = Flask(__name__)
 
+# ============================================================
+# BUBU × DUDU — GLOBAL COUPLE UNIVERSE
+# Production-style single-file Flask prototype.
+#
+# For real production: move HTML/CSS/JS into templates/static,
+# add PostgreSQL, authentication, object storage, HTTPS, CSRF,
+# rate limiting, backups and proper image licensing.
+# ============================================================
 
-@app.route("/")
-def home():
-    return r'''
-<!DOCTYPE html>
+HTML = r"""
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bubu ❤️ Dudu | Our Little World</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#ff6fa8">
+<meta name="description" content="Bubu × Dudu — a private-inspired digital universe for memories, dates, moods, questions and little love rituals.">
+<meta property="og:title" content="Bubu × Dudu — Our Little Universe">
+<meta property="og:description" content="Memories, moods, dates, bucket lists, questions and love notes in one beautiful space.">
+<title>Bubu × Dudu — Our Little Universe</title>
+
 <style>
 :root{
-  --pink:#ff6f91; --pink2:#ff93ac; --cream:#fff8f1; --brown:#6b4f45;
-  --soft:#ffe8ef; --yellow:#ffd86b; --purple:#b48cff; --blue:#8ed5ff;
-  --card:#ffffff; --text:#513d37; --shadow:0 14px 35px rgba(107,79,69,.14);
+ --bg:#fffaf7;--surface:#fff;--ink:#251c21;--muted:#75666d;
+ --pink:#ff6fa8;--pink2:#ff9ac3;--rose:#ffe0eb;--line:#f2d9e3;
+ --purple:#9275ff;--green:#63b99a;--gold:#e8ae4c;
+ --shadow:0 20px 70px rgba(62,25,43,.10);
+ --radius:26px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
-body{font-family:Inter,ui-rounded,"Segoe UI",Arial,sans-serif;background:linear-gradient(180deg,#fff9f4 0%,#fff3f7 50%,#fff9f4 100%);color:var(--text);overflow-x:hidden}
-body.dark{--card:#2d2530;--text:#fff5f8;--cream:#211c22;--soft:#3d2d36;background:#211c22}
-header{position:sticky;top:0;z-index:1000;background:rgba(255,255,255,.9);backdrop-filter:blur(13px);display:flex;align-items:center;justify-content:space-between;padding:14px 5%;border-bottom:1px solid #ffe1e9}
-body.dark header{background:rgba(33,28,34,.9);border-color:#493641}
-.logo{font-weight:900;font-size:24px;color:var(--pink)}
-nav{display:flex;gap:17px;flex-wrap:wrap;align-items:center}
-nav a{color:var(--text);text-decoration:none;font-weight:700;font-size:14px}
-nav a:hover{color:var(--pink)}
-.icon-btn{border:0;border-radius:50%;width:40px;height:40px;background:var(--soft);font-size:20px;cursor:pointer}
-.hero{min-height:88vh;display:grid;grid-template-columns:1.08fr .92fr;align-items:center;gap:35px;padding:60px 7%;position:relative;overflow:hidden}
-.hero:before,.hero:after{content:"";position:absolute;border-radius:50%;filter:blur(2px);z-index:-1}
-.hero:before{width:380px;height:380px;background:#ffe2eb;top:-100px;right:-60px}
-.hero:after{width:290px;height:290px;background:#fff0b9;left:-100px;bottom:-80px}
-.badge{display:inline-block;padding:8px 14px;background:var(--soft);color:var(--pink);border-radius:999px;font-weight:800;margin-bottom:18px}
-.hero h1{font-size:clamp(44px,7vw,82px);line-height:.98;color:var(--brown)}
-body.dark .hero h1{color:#fff3f7}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--ink);overflow-x:hidden}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+a{text-decoration:none;color:inherit}
+.container{width:min(1180px,92%);margin:auto}
+.topbar{height:70px;position:sticky;top:0;z-index:900;background:rgba(255,250,247,.82);backdrop-filter:blur(20px);border-bottom:1px solid var(--line);display:flex;align-items:center}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.brand{font-weight:1000;font-size:22px;letter-spacing:-1px}
+.brand b{color:var(--pink)}
+.navlinks{display:flex;gap:20px;font-size:13px;font-weight:800;color:#5d4c54}
+.navlinks a:hover{color:var(--pink)}
+.nav-actions{display:flex;gap:8px}
+.icon-btn{width:40px;height:40px;border:1px solid var(--line);background:#fff;border-radius:50%;display:grid;place-items:center}
+.hero{min-height:calc(100vh - 70px);display:grid;grid-template-columns:1.08fr .92fr;align-items:center;gap:50px;padding:70px 0;position:relative;overflow:hidden}
+.hero:before{content:"";position:absolute;width:600px;height:600px;background:#ffd8e8;filter:blur(30px);opacity:.55;border-radius:50%;left:-250px;top:-250px}
+.hero-copy{position:relative;z-index:2}
+.kicker{font-size:11px;letter-spacing:3px;font-weight:1000;color:var(--pink)}
+.hero h1{font-size:clamp(54px,8vw,100px);letter-spacing:-6px;line-height:.88;margin:18px 0}
 .hero h1 span{color:var(--pink)}
-.hero p{font-size:19px;line-height:1.8;margin:24px 0;max-width:680px}
-.btn{border:0;border-radius:999px;padding:13px 21px;font-weight:800;cursor:pointer;background:var(--pink);color:white;box-shadow:0 8px 20px rgba(255,111,145,.25);transition:.2s;margin:5px}
-.btn:hover{transform:translateY(-2px) scale(1.02)}
-.btn.alt{background:white;color:var(--pink);border:2px solid var(--pink);box-shadow:none}
-body.dark .btn.alt{background:#30262e}
-.hero-art{position:relative;min-height:470px;display:flex;justify-content:center;align-items:center}
-.bubble{position:absolute;background:white;border-radius:22px;padding:11px 16px;box-shadow:var(--shadow);font-weight:800;animation:float 3s ease-in-out infinite}
-body.dark .bubble{background:#332731}
-.b1{top:30px;left:5%}.b2{right:2%;top:100px;animation-delay:.8s}.b3{bottom:55px;left:4%;animation-delay:1.4s}
-@keyframes float{50%{transform:translateY(-9px)}}
-.couple-svg{width:min(100%,510px);filter:drop-shadow(0 18px 18px rgba(92,62,69,.15))}
-.section{padding:70px 6%}
-.section-title{text-align:center;font-size:clamp(32px,5vw,48px);color:var(--brown);margin-bottom:12px}
-body.dark .section-title{color:#fff}
-.section-sub{text-align:center;max-width:720px;margin:0 auto 34px;line-height:1.7;color:#806c66}
-body.dark .section-sub{color:#dbcdd2}
-.filters{text-align:center;margin-bottom:26px}
-.filter-btn{border:0;padding:9px 15px;margin:5px;border-radius:999px;background:#fff;color:var(--brown);font-weight:800;cursor:pointer;box-shadow:0 5px 12px rgba(0,0,0,.06)}
-.filter-btn.active{background:var(--pink);color:white}
-body.dark .filter-btn{background:#392d35;color:#fff}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px}
-.card{background:var(--card);border-radius:24px;padding:22px;box-shadow:var(--shadow);transition:.25s;border:1px solid rgba(255,255,255,.6)}
-.card:hover{transform:translateY(-6px)}
-.mood-card{text-align:center;overflow:hidden}
-.mood-visual{height:190px;border-radius:20px;margin-bottom:16px;display:flex;align-items:center;justify-content:center;font-size:82px;position:relative;overflow:hidden}
-.mood-visual:after{content:"";position:absolute;width:120px;height:30px;background:rgba(255,255,255,.35);border-radius:50%;bottom:18px;filter:blur(7px)}
-.happy{background:linear-gradient(135deg,#fff0a7,#ffd4df)}
-.cry{background:linear-gradient(135deg,#cfebff,#e4d9ff)}
-.fight{background:linear-gradient(135deg,#ffd2c7,#ffc0ca)}
-.sad{background:linear-gradient(135deg,#d7defe,#d1e9ed)}
-.love{background:linear-gradient(135deg,#ffe0ea,#ffc3d4)}
-.sleep{background:linear-gradient(135deg,#ddd6ff,#c7e4ff)}
-.mood-card h3{font-size:21px;margin:8px 0}.mood-card p{line-height:1.6;color:#7a6660}
-.quote-box{max-width:900px;margin:auto;text-align:center;background:linear-gradient(135deg,#fff,#fff1f5);padding:45px;border-radius:30px;box-shadow:var(--shadow);position:relative}
-body.dark .quote-box{background:#332630}
-.quote-mark{font-size:80px;line-height:.5;color:#ffb6c8}.quote-text{font-size:clamp(22px,4vw,34px);line-height:1.45;font-weight:900;margin:15px 0}.quote-author{color:var(--pink);font-weight:800}
-.story-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:22px}
-.story-card{position:relative;overflow:hidden}.story-no{font-size:60px;font-weight:900;color:#ffd5df;position:absolute;right:18px;top:6px}.story-card h3{margin:25px 0 10px;color:var(--pink)}.story-card p{line-height:1.75}
-.timeline{max-width:850px;margin:auto;position:relative}.timeline:before{content:"";position:absolute;left:24px;top:0;bottom:0;width:4px;background:#ffd4df;border-radius:5px}.moment{padding-left:70px;margin:30px 0;position:relative}.moment:before{content:"💗";position:absolute;left:5px;top:0;background:white;border-radius:50%;width:42px;height:42px;display:grid;place-items:center;box-shadow:var(--shadow)}
-.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:20px}.feature{text-align:center}.feature .big{font-size:62px}.feature h3{margin:10px}.feature p{line-height:1.6;color:#806c66}
-.meter{height:18px;background:#f2e8eb;border-radius:999px;overflow:hidden;margin:18px 0}.meter-fill{height:100%;width:0;background:linear-gradient(90deg,#ff93ac,#ff5e88);transition:width .5s;border-radius:999px}
-input,textarea,select{width:100%;padding:13px 14px;border:1px solid #ead8de;border-radius:14px;margin:7px 0 12px;background:#fff;color:#49383a;font:inherit}
-body.dark input,body.dark textarea,body.dark select{background:#2a2229;color:#fff;border-color:#5a4550}
-.note-list{display:grid;gap:10px;margin-top:15px}.note{background:var(--soft);padding:12px 14px;border-radius:13px;text-align:left;display:flex;justify-content:space-between;gap:10px}.note button{border:0;background:transparent;cursor:pointer}
-.memory-wall{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:15px}.polaroid{background:white;padding:11px 11px 24px;box-shadow:0 8px 20px rgba(0,0,0,.1);transform:rotate(-1.5deg);border-radius:8px;text-align:center}.polaroid:nth-child(even){transform:rotate(1.8deg)}.polaroid .pic{height:150px;border-radius:6px;display:grid;place-items:center;font-size:65px}.polaroid p{margin-top:12px;font-weight:800;color:#66504d}
-body.dark .polaroid{background:#352a32}.heart{position:fixed;pointer-events:none;z-index:3000;animation:fly 1.7s ease-out forwards;font-size:24px}@keyframes fly{to{transform:translateY(-150px) scale(1.8);opacity:0}}
-.toast{position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(90px);background:#4e3840;color:white;padding:12px 20px;border-radius:999px;z-index:4000;opacity:0;transition:.3s}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-footer{padding:45px 20px;text-align:center;background:#6b4f45;color:white;margin-top:35px}footer h2{color:#ffd4df;margin-bottom:8px}
-#topBtn{position:fixed;bottom:24px;right:20px;border:0;width:46px;height:46px;border-radius:50%;background:var(--pink);color:#fff;cursor:pointer;display:none;z-index:900}
-@media(max-width:860px){header{align-items:flex-start}.hero{grid-template-columns:1fr;text-align:center;padding-top:45px}.hero p{margin-left:auto;margin-right:auto}.hero-art{min-height:390px}nav{display:none}.hero h1{font-size:52px}.b1{left:0}.b2{right:0}.section{padding:55px 5%}}
+.hero p{font-size:18px;line-height:1.75;color:var(--muted);max-width:650px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}
+.btn{border:0;border-radius:999px;padding:13px 20px;font-weight:900;transition:.2s}
+.btn:hover{transform:translateY(-2px)}
+.btn-primary{background:linear-gradient(135deg,var(--pink),var(--pink2));color:#fff;box-shadow:0 12px 30px #ff6fa83b}
+.btn-soft{background:#fff;border:1px solid var(--line);color:#694758}
+.hero-art{height:520px;display:grid;place-items:center;position:relative}
+.blob{position:absolute;width:430px;height:430px;background:linear-gradient(135deg,#ffd6e6,#e9ddff);border-radius:45% 55% 60% 40%;animation:morph 8s infinite}
+.hero-photo{position:relative;width:min(390px,75vw);height:450px;border-radius:35px;overflow:hidden;box-shadow:0 35px 80px #4b263b2b;transform:rotate(3deg);background:#eee}
+.hero-photo img{width:100%;height:100%;object-fit:cover}
+.float{position:absolute;font-size:42px;animation:float 3s ease-in-out infinite;z-index:3}
+.f-a{top:45px;left:15px}.f-b{right:15px;bottom:75px;animation-delay:.8s}.f-c{right:5px;top:80px;animation-delay:1.5s}
+@keyframes float{50%{transform:translateY(-15px) rotate(7deg)}}@keyframes morph{50%{border-radius:60% 40% 45% 55%;transform:rotate(8deg) scale(1.03)}}
+.section{padding:100px 0}
+.section-head{text-align:center;margin-bottom:35px}
+.section-head h2{font-size:clamp(34px,5vw,58px);letter-spacing:-2px;margin:8px 0}
+.section-head h2 span{color:var(--pink)}
+.section-head p{color:var(--muted);line-height:1.7}
+.eyebrow{font-size:10px;letter-spacing:3px;color:var(--pink);font-weight:1000}
+.section-soft{background:#fff3f7}
+.horizontal{display:flex;overflow-x:auto;gap:18px;scroll-snap-type:x mandatory;scrollbar-width:none;padding:8px 4% 30px}
+.horizontal::-webkit-scrollbar{display:none}
+.slide{min-width:min(1060px,86vw);scroll-snap-align:center;border-radius:36px;min-height:560px;padding:55px;display:grid;grid-template-columns:1fr 1fr;align-items:center;gap:35px;box-shadow:var(--shadow);overflow:hidden}
+.slide.love{background:linear-gradient(135deg,#ffd6e6,#fff7f2)}
+.slide.fight{background:linear-gradient(135deg,#30232a,#77475b);color:white}
+.slide.cry{background:linear-gradient(135deg,#d7e9ff,#f1e7ff)}
+.slide.happy{background:linear-gradient(135deg,#ffe99b,#ffd0e1)}
+.slide h3{font-size:clamp(42px,5vw,70px);line-height:.94;margin:15px 0}
+.slide p{max-width:550px;line-height:1.8;color:inherit;opacity:.78}
+.visual-card{height:400px;border-radius:30px;overflow:hidden;position:relative;background:#fff;box-shadow:0 25px 55px #4b263b20}
+.visual-card img{width:100%;height:100%;object-fit:cover}
+.quote{padding:24px;border:1px solid #ffffff88;background:#ffffff33;backdrop-filter:blur(12px);border-radius:24px;margin-top:22px;font-weight:800}
+.fight-ui{height:380px;display:grid;place-items:center;position:relative}
+.bubble{position:absolute;background:#fff;color:#573a47;padding:18px 22px;border-radius:20px;box-shadow:0 15px 35px #0003;font-weight:1000}
+.b1{top:25px;left:0;transform:rotate(-6deg)}.b2{right:0;bottom:35px;transform:rotate(6deg)}
+.vs{font-size:60px;color:#ff9cbc;font-weight:1000}
+.big-emoji{font-size:110px;text-align:center;animation:float 3s infinite}
+.progress{height:13px;background:#ffffffaa;border-radius:99px;overflow:hidden;margin:20px 0}
+.progress span{display:block;height:100%;width:88%;background:linear-gradient(90deg,#9ac1ff,#c29aff,#ff8db7);border-radius:99px}
+.orbit{width:350px;height:350px;border:2px dashed #6e4a5a44;border-radius:50%;position:relative;margin:auto;animation:spin 18s linear infinite}
+.orbit span{position:absolute;width:65px;height:65px;border-radius:50%;background:#fff;display:grid;place-items:center;font-size:30px;box-shadow:0 10px 25px #4b263b1c}
+.orbit .a{top:-10px;left:142px}.orbit .b{right:-10px;top:142px}.orbit .c{bottom:-10px;left:142px}.orbit .d{left:-10px;top:142px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.section-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:25px;box-shadow:0 10px 30px #4b263b0a}
+.card:hover{box-shadow:0 20px 45px #4b263b12;transform:translateY(-3px)}
+.card{transition:.2s}
+.card h3{margin:10px 0;font-size:21px}.card p{color:var(--muted);line-height:1.65;font-size:14px}
+.card-icon{font-size:38px}
+.input{width:100%;padding:13px 14px;border:1px solid var(--line);border-radius:13px;background:#fff;outline:none;margin:7px 0}
+.output{margin-top:12px;background:#fff6f9;border-radius:15px;padding:15px;min-height:50px;line-height:1.6}
+.memory{display:flex;align-items:center;gap:8px;background:#fff7fa;padding:10px 12px;border-radius:13px;margin-top:7px}
+.memory span{flex:1}.memory small{display:block;color:#999;font-size:10px}.danger{border:0;background:none;color:var(--pink);font-size:19px}
+.game-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}
+.game{background:#fff;border:1px solid var(--line);border-radius:22px;padding:24px;text-align:center;cursor:pointer;font-size:28px}
+.game strong{display:block;font-size:15px;margin-top:8px}.game small{color:#888}
+.big-result{text-align:center;background:#fff;border:1px solid var(--line);border-radius:22px;padding:22px;margin-top:18px;font-size:19px}
+.gallery{display:flex;gap:18px;overflow-x:auto;scroll-snap-type:x proximity;scrollbar-width:none;padding:8px 4% 30px}
+.gallery::-webkit-scrollbar{display:none}
+.gallery-card{min-width:280px;height:400px;border:0;border-radius:28px;overflow:hidden;position:relative;background:#eee;cursor:pointer;scroll-snap-align:start;padding:0}
+.gallery-card img{width:100%;height:100%;object-fit:cover;transition:.5s}.gallery-card:hover img{transform:scale(1.06)}
+.gallery-card span{position:absolute;left:13px;right:13px;bottom:13px;background:#ffffffe8;padding:12px;border-radius:13px;font-weight:900;text-align:left}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:24px;padding:25px;text-align:center}
+.stat b{display:block;font-size:36px;color:var(--pink)}.stat small{color:#7b6870}
+.countdown{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin-top:20px}
+.timebox{min-width:95px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:15px;text-align:center}.timebox b{display:block;font-size:30px;color:var(--pink)}.timebox small{color:#777}
+.playlist{display:flex;gap:10px}.playlist .input{margin:0}.song{display:flex;justify-content:space-between;padding:13px 15px;border:1px solid var(--line);border-radius:12px;margin-top:8px;background:#fff}
+.modal{display:none;position:fixed;inset:0;background:#160e14c9;z-index:5000;align-items:center;justify-content:center;padding:20px}
+.modal-box{max-width:650px;width:100%;background:#fff8fb;border-radius:30px;padding:42px;position:relative;box-shadow:0 35px 100px #0005}.close{position:absolute;right:18px;top:15px;border:0;background:#0001;width:40px;height:40px;border-radius:50%;font-size:25px}
+.modal-box h3{font-size:38px;margin:10px 0}.modal-box p{line-height:1.8;color:#67545d}
+.lightbox img{max-width:90vw;max-height:80vh;border-radius:25px}
+.toast{position:fixed;right:20px;bottom:20px;background:#251c21;color:white;padding:14px 18px;border-radius:999px;z-index:7000;transform:translateY(100px);opacity:0;transition:.3s}.toast.show{transform:none;opacity:1}
+.hearts{position:fixed;inset:0;pointer-events:none;z-index:8000}.heart{position:absolute;bottom:-40px;animation:rise 2s ease-out forwards;font-size:25px}@keyframes rise{to{transform:translateY(-110vh) rotate(30deg);opacity:0}}
+footer{padding:50px 0;background:#251c21;color:#fff;text-align:center}footer p{opacity:.7;margin-top:8px;font-size:13px}
+.mobile-menu{display:none}
+@media(max-width:900px){
+ .hero{grid-template-columns:1fr;padding:55px 0}.hero-art{height:400px}
+ .slide{grid-template-columns:1fr;min-height:700px;padding:35px}.visual-card{height:300px}.fight-ui{height:260px}
+ .section-grid{grid-template-columns:1fr 1fr}.game-grid{grid-template-columns:1fr 1fr}.stats{grid-template-columns:1fr 1fr}
+ .navlinks{display:none}.mobile-menu{display:grid}
+}
+@media(max-width:600px){
+ .hero h1{letter-spacing:-3px}.hero-photo{height:360px}.blob{width:310px;height:310px}
+ .section-grid,.game-grid,.stats{grid-template-columns:1fr}
+ .slide{min-width:92vw}.orbit{width:250px;height:250px}.orbit .a,.orbit .c{left:92px}.orbit .b,.orbit .d{top:92px}
+ .chapter-controls{display:none}
+}
+body.dark{--bg:#151015;--surface:#211a20;--ink:#fff4f8;--muted:#b9aab2;--line:#3b2933}
+body.dark .topbar,body.dark .pro-white{background:#181218}body.dark .card,body.dark .gallery-card,body.dark .game,body.dark .stat,body.dark .song,body.dark .timebox,body.dark .input{background:#211a20;color:#fff}
+body.dark .navlinks{color:#ddd}body.dark .output{background:#2a1d25}
 </style>
 </head>
+
 <body>
-<header>
-  <div class="logo">🐻 Bubu <span>❤️</span> Dudu 🐼</div>
-  <nav>
-    <a href="#moods">Moods</a><a href="#quotes">Quotes</a><a href="#stories">Stories</a><a href="#memories">Memories</a><a href="#play">Play</a><a href="#notes">Love Notes</a>
-  </nav>
-  <button class="icon-btn" onclick="toggleTheme()" title="Theme">🌙</button>
+
+<header class="topbar">
+<div class="container nav">
+<a class="brand" href="#">🐼 Bubu <b>×</b> Dudu</a>
+
+<nav class="navlinks">
+<a href="#story">Story</a>
+<a href="#memories">Memories</a>
+<a href="#daily">Daily</a>
+<a href="#dates">Dates</a>
+<a href="#bucket">Bucket List</a>
+<a href="#games">Games</a>
+</nav>
+
+<div class="nav-actions">
+<button class="icon-btn" onclick="toggleTheme()" title="Theme">🌙</button>
+<button class="icon-btn mobile-menu" onclick="scrollToId('story')">☰</button>
+</div>
+</div>
 </header>
 
-<section class="hero" id="home">
-  <div>
-    <span class="badge">✨ Welcome to our tiny chaotic universe</span>
-    <h1>Bubu <span>❤️</span> Dudu</h1>
-    <p>A cute little place for love, silly fights, dramatic crying, random sadness, happy hugs, tiny stories and all the moments that somehow make two weirdos inseparable.</p>
-    <button class="btn" onclick="document.getElementById('moods').scrollIntoView({behavior:'smooth'})">Explore Our Moods 💞</button>
-    <button class="btn alt" onclick="rainHearts()">Send 100 Hugs 🤗</button>
-  </div>
-  <div class="hero-art">
-    <div class="bubble b1">Bubu: “I’m not angry 😤”</div><div class="bubble b2">Dudu: “Then why that face? 😭”</div><div class="bubble b3">5 mins later: 🫂❤️</div>
-    <svg class="couple-svg" viewBox="0 0 600 500" aria-label="Cute Bubu and Dudu illustration">
-      <ellipse cx="300" cy="445" rx="225" ry="30" fill="#ead9d1" opacity=".5"/>
-      <circle cx="175" cy="120" r="52" fill="#a97957"/><circle cx="330" cy="125" r="50" fill="#222"/>
-      <circle cx="128" cy="92" r="27" fill="#8f6348"/><circle cx="222" cy="92" r="27" fill="#8f6348"/>
-      <circle cx="290" cy="92" r="26" fill="#111"/><circle cx="371" cy="94" r="26" fill="#111"/>
-      <ellipse cx="185" cy="265" rx="135" ry="150" fill="#b9825c"/>
-      <ellipse cx="343" cy="265" rx="128" ry="148" fill="#fafafa" stroke="#222" stroke-width="12"/>
-      <ellipse cx="180" cy="255" rx="93" ry="105" fill="#f3c9ad"/>
-      <ellipse cx="343" cy="250" rx="90" ry="100" fill="#fff"/>
-      <ellipse cx="320" cy="217" rx="22" ry="34" fill="#111"/><ellipse cx="368" cy="217" rx="22" ry="34" fill="#111"/>
-      <circle cx="326" cy="210" r="7" fill="white"/><circle cx="374" cy="210" r="7" fill="white"/>
-      <circle cx="157" cy="225" r="9" fill="#3d2d28"/><circle cx="202" cy="225" r="9" fill="#3d2d28"/>
-      <ellipse cx="180" cy="253" rx="12" ry="9" fill="#4a332d"/><ellipse cx="344" cy="260" rx="12" ry="9" fill="#222"/>
-      <path d="M164 270 Q180 286 198 270" fill="none" stroke="#633f36" stroke-width="5" stroke-linecap="round"/>
-      <path d="M327 276 Q344 291 363 276" fill="none" stroke="#222" stroke-width="5" stroke-linecap="round"/>
-      <circle cx="135" cy="258" r="18" fill="#ff9eb3" opacity=".7"/><circle cx="225" cy="258" r="18" fill="#ff9eb3" opacity=".7"/>
-      <circle cx="300" cy="263" r="17" fill="#ff9eb3" opacity=".75"/><circle cx="390" cy="263" r="17" fill="#ff9eb3" opacity=".75"/>
-      <path d="M255 310 C295 280 320 285 348 313" stroke="#b9825c" stroke-width="32" fill="none" stroke-linecap="round"/>
-      <path d="M450 310 C407 281 378 289 348 314" stroke="#222" stroke-width="30" fill="none" stroke-linecap="round"/>
-      <path d="M265 142 C280 112 323 114 342 143 C360 170 342 202 303 228 C267 201 248 172 265 142" fill="#ff6f91"/>
-    </svg>
-  </div>
+<main>
+
+<section class="hero">
+<div class="container" style="display:contents">
+<div class="hero-copy">
+<span class="kicker">BUBU × DUDU • YOUR PRIVATE LITTLE UNIVERSE</span>
+<h1>Love is made of <span>little things.</span></h1>
+<p>
+A beautiful space for two people to keep their memories, answer questions,
+plan dates, build dreams, share moods and collect the tiny moments that
+eventually become a whole story.
+</p>
+
+<div class="actions">
+<button class="btn btn-primary" onclick="scrollToId('story')">Explore Our Story →</button>
+<button class="btn btn-soft" onclick="surprise()">✨ Surprise Me</button>
+</div>
+
+<div style="margin-top:25px;color:#907782;font-size:13px">
+🔒 Designed around private couple experiences • 🌎 Global-friendly • 📱 Mobile-first
+</div>
+</div>
+
+<div class="hero-art">
+<div class="blob"></div>
+<div class="hero-photo">
+<img src="https://i.pinimg.com/736x/b2/b7/66/b2b7666fb81587373c74c4fc6fa7181e.jpg"
+alt="Bubu Dudu couple illustration">
+</div>
+<div class="float f-a">❤️</div>
+<div class="float f-b">🌸</div>
+<div class="float f-c">✨</div>
+</div>
+</div>
 </section>
 
-<section class="section" id="moods">
-  <h2 class="section-title">Every Bubu × Dudu Mood</h2><p class="section-sub">Because love is not just cute photos. Sometimes it is “don’t talk to me”, followed by “why aren’t you talking to me?” five minutes later.</p>
-  <div class="filters">
-    <button class="filter-btn active" onclick="filterMood('all',this)">All</button><button class="filter-btn" onclick="filterMood('happy',this)">Happy</button><button class="filter-btn" onclick="filterMood('fight',this)">Fight</button><button class="filter-btn" onclick="filterMood('cry',this)">Cry</button><button class="filter-btn" onclick="filterMood('sad',this)">Sad</button><button class="filter-btn" onclick="filterMood('love',this)">Love</button>
-  </div>
-  <div class="grid" id="moodGrid">
-    <article class="card mood-card" data-mood="happy"><div class="mood-visual happy">🐻😄🐼</div><h3>Happy Together</h3><p>Laughing at things nobody else would understand.</p></article>
-    <article class="card mood-card" data-mood="fight"><div class="mood-visual fight">🐻💢🐼</div><h3>Mini World War</h3><p>Both are right. Both are wrong. Nobody is apologising first.</p></article>
-    <article class="card mood-card" data-mood="cry"><div class="mood-visual cry">🐻😭🐼</div><h3>Drama & Tears</h3><p>One cries. The other panics. Then both become soft.</p></article>
-    <article class="card mood-card" data-mood="sad"><div class="mood-visual sad">🐻🥺🐼</div><h3>Missing You</h3><p>When one tiny “I miss you” contains an entire paragraph.</p></article>
-    <article class="card mood-card" data-mood="love"><div class="mood-visual love">🐻🫶🐼</div><h3>Love Mode</h3><p>Random hugs, forehead kisses and unnecessary cuteness.</p></article>
-    <article class="card mood-card" data-mood="happy"><div class="mood-visual happy">🐻🍜🐼</div><h3>Food Date</h3><p>Sharing food until somebody steals the last bite.</p></article>
-    <article class="card mood-card" data-mood="fight"><div class="mood-visual fight">🐻🙄🐼</div><h3>Silent Treatment</h3><p>Online. Seen. No reply. Psychological warfare begins.</p></article>
-    <article class="card mood-card" data-mood="love"><div class="mood-visual sleep">🐻💤🐼</div><h3>Sleepy Calls</h3><p>“You sleep first.” “No, you.” Repeat for 37 minutes.</p></article>
-  </div>
+<!-- STORY -->
+<section id="story" class="chapter-app section-soft">
+<div class="container section-head">
+<span class="eyebrow">SWIPE • SCROLL • DISCOVER</span>
+<h2>Our story, <span>one chapter at a time.</span></h2>
+<p>Use your finger on mobile, mouse wheel on desktop, or the buttons to move between chapters.</p>
+</div>
+
+<div class="horizontal" id="storyRail">
+
+<article class="slide love">
+<div>
+<span class="eyebrow">01 • THE BEGINNING</span>
+<h3>Two little weirdos.<br>One big story.</h3>
+<p>
+Every relationship starts somewhere: one conversation, one joke,
+one unexpected connection. This chapter is yours to customize.
+</p>
+<div class="quote">“The best stories are the ones we didn't plan.” ❤️</div>
+<button class="btn btn-primary" style="margin-top:20px" onclick="openStory('begin')">Read chapter</button>
+</div>
+<div class="visual-card">
+<img src="https://i.pinimg.com/736x/b2/b7/66/b2b7666fb81587373c74c4fc6fa7181e.jpg"
+alt="Bubu Dudu">
+</div>
+</article>
+
+<article class="slide fight">
+<div>
+<span class="eyebrow">02 • THE CHAOS</span>
+<h3>“I'm fine.”<br>We both know you're not. 😤</h3>
+<p>
+Arguments happen. What matters is how the story continues after the
+argument. Fight, cool down, talk, laugh and come back stronger.
+</p>
+<button class="btn btn-soft" onclick="openStory('fight')" style="margin-top:20px">Replay the chaos</button>
+</div>
+<div class="fight-ui">
+<div class="bubble b1">I'M FINE 😤</div>
+<div class="vs">VS</div>
+<div class="bubble b2">NO YOU'RE NOT 😭</div>
+</div>
+</article>
+
+<article class="slide cry">
+<div>
+<span class="eyebrow">03 • THE SOFT SIDE</span>
+<h3>Sometimes we cry.<br>Then we hug harder.</h3>
+<p>
+Not every difficult moment needs a solution. Sometimes staying,
+listening and giving someone space is the most loving thing.
+</p>
+<div class="progress"><span></span></div>
+<small>Hug comfort level: 88%</small>
+</div>
+<div class="big-emoji">🥺🫂</div>
+</article>
+
+<article class="slide happy">
+<div>
+<span class="eyebrow">04 • THE HAPPY PART</span>
+<h3>Small moments.<br>Huge memories. ✨</h3>
+<p>
+Food. Calls. Reels. Random walks. Inside jokes. These ordinary
+things become the memories you don't want to lose.
+</p>
+<button class="btn btn-primary" onclick="burstHearts()">Create happiness storm ✨</button>
+</div>
+<div class="orbit">
+<span class="a">🍦</span><span class="b">🎬</span><span class="c">📱</span><span class="d">🫂</span>
+<div style="position:absolute;inset:0;display:grid;place-items:center;font-size:85px">❤️</div>
+</div>
+</article>
+
+</div>
 </section>
 
-<section class="section" id="quotes">
-  <h2 class="section-title">Bubu Dudu Quotes</h2><p class="section-sub">Tap the button whenever you need a little line for your person.</p>
-  <div class="quote-box"><div class="quote-mark">“</div><div class="quote-text" id="quoteText">You are my favourite notification, favourite problem and favourite person.</div><div class="quote-author" id="quoteAuthor">— Bubu to Dudu 💗</div><button class="btn" onclick="newQuote()">Give Me Another Quote ✨</button><button class="btn alt" onclick="copyQuote()">Copy Quote 📋</button></div>
+<!-- DAILY QUESTION -->
+<section id="daily" class="section">
+<div class="container section-head">
+<span class="eyebrow">DAILY CONNECTION</span>
+<h2>One question. <span>Two honest answers.</span></h2>
+<p>A lightweight daily ritual inspired by the best-performing couple-app pattern: answer first, reveal after.</p>
+</div>
+
+<div class="card" style="max-width:800px;margin:auto;text-align:center">
+<div class="card-icon">💭</div>
+<h3 id="questionText">What tiny thing made you smile today?</h3>
+<p id="questionCategory">Daily connection</p>
+
+<input class="input" id="answerInput" placeholder="Write your answer privately...">
+
+<div class="actions" style="justify-content:center">
+<button class="btn btn-primary" onclick="saveAnswer()">Lock My Answer 🔒</button>
+<button class="btn btn-soft" onclick="newQuestion()">New Question</button>
+</div>
+
+<div class="output" id="answerOutput">Your answer stays in this browser until you choose to replace it.</div>
+</div>
 </section>
 
-<section class="section" id="stories">
-  <h2 class="section-title">Tiny Stories From Our World</h2><p class="section-sub">Short scenes about two stubborn cuties who somehow keep choosing each other.</p>
-  <div class="story-grid">
-    <div class="card story-card"><span class="story-no">01</span><h3>The Last Bite 🍕</h3><p>Dudu said she was not hungry. Bubu ordered one plate. Dudu ate the last bite. Bubu stared in betrayal. Ten seconds later he ordered dessert for both.</p></div>
-    <div class="card story-card"><span class="story-no">02</span><h3>The 2-Minute Fight 😤</h3><p>Bubu said “fine”. Dudu said “fine”. Nobody was fine. Two minutes later Dudu sent a sad sticker. Bubu replied with a hug. Peace treaty signed.</p></div>
-    <div class="card story-card"><span class="story-no">03</span><h3>The Rainy Day ☔</h3><p>They had one umbrella and absolutely no coordination. Both got wet, blamed each other, laughed like idiots, and still called it a perfect day.</p></div>
-    <div class="card story-card"><span class="story-no">04</span><h3>The Goodnight Trap 🌙</h3><p>“Good night” was sent at 11:12 PM. Actual sleeping happened at 1:03 AM after memes, complaints, one fight and six “okay last message” messages.</p></div>
-  </div>
+<!-- MEMORIES -->
+<section id="memories" class="section section-soft">
+<div class="container section-head">
+<span class="eyebrow">YOUR SHARED TIMELINE</span>
+<h2>Turn moments into <span>memories.</span></h2>
+<p>A timeline should contain the context around a photo, not just the photo itself.</p>
+</div>
+
+<div class="section-grid container">
+<div class="card">
+<div class="card-icon">📸</div>
+<h3>Add a memory</h3>
+<input class="input" id="memoryTitle" placeholder="Memory title">
+<input class="input" id="memoryDate" type="date">
+<textarea class="input" id="memoryNote" rows="3" placeholder="What happened? Why was it special?"></textarea>
+<button class="btn btn-primary" onclick="addMemory()">Save memory ❤️</button>
+</div>
+
+<div class="card" style="grid-column:span 2">
+<h3>Memory Timeline</h3>
+<div id="memoryList"></div>
+</div>
+</div>
 </section>
 
-<section class="section" id="memories">
-  <h2 class="section-title">Memory Wall</h2><p class="section-sub">A playful polaroid wall for the little moments worth remembering.</p>
-  <div class="memory-wall">
-    <div class="polaroid"><div class="pic happy">🐻🤗🐼</div><p>Best Hug Ever</p></div><div class="polaroid"><div class="pic fight">🐻😠🐼</div><p>Fight #999</p></div><div class="polaroid"><div class="pic cry">🐻🧻🐼</div><p>Emergency Tissue Day</p></div><div class="polaroid"><div class="pic love">🐻💋🐼</div><p>Unexpected Kiss</p></div><div class="polaroid"><div class="pic happy">🐻🍰🐼</div><p>Sweet Date</p></div><div class="polaroid"><div class="pic sad">🐻📱🐼</div><p>Miss You Call</p></div>
-  </div>
-</section>
-
+<!-- COUNTDOWN -->
 <section class="section">
-  <h2 class="section-title">Our Chaos Timeline</h2><p class="section-sub">The usual emotional journey of a perfectly normal Bubu–Dudu day.</p>
-  <div class="timeline">
-    <div class="moment"><div class="card"><b>08:00 — Good morning ☀️</b><p>Sweet messages, sleepy faces and fake promises to be productive.</p></div></div>
-    <div class="moment"><div class="card"><b>13:00 — Food conflict 🍱</b><p>“Anything is fine.” Nothing suggested is actually fine.</p></div></div>
-    <div class="moment"><div class="card"><b>18:30 — Tiny fight 💢</b><p>A small misunderstanding somehow becomes a Supreme Court case.</p></div></div>
-    <div class="moment"><div class="card"><b>18:47 — Reconciliation 🫂</b><p>One sticker, one soft message, one hug. Case dismissed.</p></div></div>
-    <div class="moment"><div class="card"><b>23:55 — Love overload ❤️</b><p>“Okay sleep now.” Followed by another hour of talking.</p></div></div>
-  </div>
+<div class="container section-head">
+<span class="eyebrow">MILESTONES</span>
+<h2>Count down to your <span>next moment.</span></h2>
+</div>
+
+<div class="card" style="max-width:800px;margin:auto;text-align:center">
+<h3>Choose your next special date</h3>
+<input class="input" id="targetDate" type="datetime-local" onchange="saveTargetDate()">
+<div class="countdown">
+<div class="timebox"><b id="days">0</b><small>Days</small></div>
+<div class="timebox"><b id="hours">0</b><small>Hours</small></div>
+<div class="timebox"><b id="mins">0</b><small>Minutes</small></div>
+<div class="timebox"><b id="secs">0</b><small>Seconds</small></div>
+</div>
+</div>
 </section>
 
-<section class="section" id="play">
-  <h2 class="section-title">Play With Bubu & Dudu</h2><p class="section-sub">A few silly interactive features because a cute website should do more than just sit there.</p>
-  <div class="feature-grid">
-    <div class="card feature"><div class="big">🫂</div><h3>Hug Meter</h3><p>How badly does Dudu need a Bubu hug today?</p><div class="meter"><div id="hugFill" class="meter-fill"></div></div><b id="hugText">0% hug emergency</b><br><button class="btn" onclick="hugMeter()">Measure Hug Need</button></div>
-    <div class="card feature"><div class="big">💞</div><h3>Love Compatibility</h3><p>Enter two names. This is scientifically useless but emotionally important.</p><input id="name1" placeholder="Bubu"><input id="name2" placeholder="Dudu"><button class="btn" onclick="loveCalc()">Calculate Love</button><h2 id="loveResult" style="color:var(--pink);margin-top:10px">❤️</h2></div>
-    <div class="card feature"><div class="big">🎭</div><h3>Today's Mood</h3><p>Let the universe decide your Bubu–Dudu mood.</p><h2 id="dailyMood" style="margin:20px 0">🤔</h2><button class="btn" onclick="pickMood()">Pick Our Mood</button></div>
-    <div class="card feature"><div class="big">🎁</div><h3>Surprise Button</h3><p>Never trust a button labelled surprise.</p><h2 id="surpriseText" style="margin:18px 0">👀</h2><button class="btn" onclick="surpriseMe()">Open Surprise</button></div>
-  </div>
+<!-- DATE IDEAS -->
+<section id="dates" class="section section-soft">
+<div class="container section-head">
+<span class="eyebrow">DATE DISCOVERY</span>
+<h2>Stop asking <span>“what should we do?”</span></h2>
+<p>Generate ideas based on mood, budget and energy.</p>
+</div>
+
+<div class="section-grid container">
+<div class="card">
+<div class="card-icon">🎯</div>
+<h3>Date generator</h3>
+
+<select class="input" id="dateMood">
+<option value="any">Any mood</option>
+<option value="cozy">Cozy</option>
+<option value="adventure">Adventure</option>
+<option value="food">Food</option>
+<option value="cheap">Low budget</option>
+<option value="longdistance">Long distance</option>
+</select>
+
+<button class="btn btn-primary" onclick="generateDate()">Find our date →</button>
+<div class="output" id="dateOutput">Your next plan will appear here.</div>
+</div>
+
+<div class="card">
+<div class="card-icon">🗺️</div>
+<h3>Love Map</h3>
+<p>Keep the places that matter to your story. This prototype stores them locally; production can connect them to a real map provider.</p>
+<input class="input" id="placeInput" placeholder="e.g. Our first café">
+<button class="btn btn-primary" onclick="addPlace()">Pin place 📍</button>
+<div class="output" id="placeList"></div>
+</div>
+
+<div class="card">
+<div class="card-icon">🎵</div>
+<h3>Our playlist</h3>
+<input class="input" id="songInput" placeholder="Song — Artist">
+<button class="btn btn-primary" onclick="addSong()">Add to our soundtrack 🎶</button>
+<div id="songList"></div>
+</div>
+</div>
 </section>
 
-<section class="section" id="notes">
-  <h2 class="section-title">Love Notes Jar</h2><p class="section-sub">Write tiny notes. They stay in your browser so you can come back to them later.</p>
-  <div class="card" style="max-width:760px;margin:auto;text-align:center"><textarea id="noteInput" rows="3" maxlength="180" placeholder="Example: I am still angry, but I also miss you 😤❤️"></textarea><button class="btn" onclick="addNote()">Drop Note Into Jar 💌</button><button class="btn alt" onclick="clearNotes()">Clear Jar</button><div id="noteList" class="note-list"></div></div>
+<!-- BUCKET LIST -->
+<section id="bucket" class="section">
+<div class="container section-head">
+<span class="eyebrow">DREAMS → PLANS → MEMORIES</span>
+<h2>Our <span>couple bucket list.</span></h2>
+<p>Add dreams, mark them completed and watch your relationship archive grow.</p>
+</div>
+
+<div class="section-grid container">
+<div class="card">
+<div class="card-icon">🌍</div>
+<h3>Add a dream</h3>
+<input class="input" id="wishInput" placeholder="See the Northern Lights">
+<select class="input" id="wishCategory">
+<option>Travel</option><option>Food</option><option>Adventure</option><option>Home</option><option>Funny</option><option>Romantic</option>
+</select>
+<button class="btn btn-primary" onclick="addWish()">Add to bucket list</button>
+</div>
+
+<div class="card" style="grid-column:span 2">
+<h3>Things we want to do</h3>
+<div id="wishList"></div>
+</div>
+</div>
 </section>
 
+<!-- OPEN WHEN -->
+<section class="section section-soft">
+<div class="container section-head">
+<span class="eyebrow">FOR THE HARD DAYS</span>
+<h2>Open when <span>you need me.</span></h2>
+</div>
+
+<div class="section-grid container">
+<div class="card" onclick="openLetter('sad')"><div class="card-icon">🥺</div><h3>Open when you're sad</h3><p>A little reminder that you're not alone.</p></div>
+<div class="card" onclick="openLetter('miss')"><div class="card-icon">🌙</div><h3>Open when you miss me</h3><p>For those long-distance moments.</p></div>
+<div class="card" onclick="openLetter('fight')"><div class="card-icon">😤</div><h3>Open after a fight</h3><p>Because being right isn't more important than being us.</p></div>
+<div class="card" onclick="openLetter('happy')"><div class="card-icon">🥰</div><h3>Open when you're happy</h3><p>Save the happiness and celebrate it twice.</p></div>
+</div>
+</section>
+
+<!-- GAMES -->
+<section id="games" class="section">
+<div class="container section-head">
+<span class="eyebrow">PLAY TOGETHER</span>
+<h2>Little games for <span>two.</span></h2>
+</div>
+
+<div class="game-grid container">
+<button class="game" onclick="catchHearts()">💗<strong>Catch Hearts</strong><small>Random surprise</small></button>
+<button class="game" onclick="compliment()">🥰<strong>Compliment</strong><small>Make them smile</small></button>
+<button class="game" onclick="fightResolver()">⚖️<strong>Fight Resolver</strong><small>Who says sorry?</small></button>
+<button class="game" onclick="fortune()">🔮<strong>Love Fortune</strong><small>Ask the universe</small></button>
+</div>
+
+<div class="big-result container" id="gameResult">Choose a game 👆</div>
+</section>
+
+<!-- GALLERY -->
+<section class="section section-soft">
+<div class="container section-head">
+<span class="eyebrow">VISUAL UNIVERSE</span>
+<h2>Bubu × Dudu <span>Gallery.</span></h2>
+<p>Swipe horizontally. Tap an image to open it.</p>
+</div>
+
+<div class="gallery">
+<button class="gallery-card" onclick="openImage(this)">
+<img src="https://i.pinimg.com/736x/b2/b7/66/b2b7666fb81587373c74c4fc6fa7181e.jpg" alt="Bubu Dudu">
+<span>🌸 Together</span>
+</button>
+
+<button class="gallery-card" onclick="openImage(this)">
+<img src="https://static.wixstatic.com/media/5d1e18_a6c2587b37e145f2981f1beb15e01c67~mv2.avif/v1/fill/w_640,h_640,al_c,q_85,enc_avif,quality_auto/5d1e18_a6c2587b37e145f2981f1beb15e01c67~mv2.avif" alt="Bubu Dudu">
+<span>🧸 Cozy days</span>
+</button>
+
+<button class="gallery-card" onclick="openImage(this)">
+<img src="https://i.pinimg.com/736x/b2/b7/66/b2b7666fb81587373c74c4fc6fa7181e.jpg" alt="Bubu Dudu">
+<span>💕 Our vibe</span>
+</button>
+</div>
+</section>
+
+<!-- STATS -->
 <section class="section">
-  <div class="quote-box"><div class="quote-mark">♥</div><div class="quote-text">No perfect relationship. Just two imperfect people who keep finding their way back to each other.</div><button class="btn" onclick="rainHearts()">Make It Rain Hearts 💖</button></div>
+<div class="container section-head">
+<span class="eyebrow">OUR UNIVERSE</span>
+<h2>Built from <span>little moments.</span></h2>
+</div>
+
+<div class="stats container">
+<div class="stat"><b id="memoryCount">0</b><small>Memories</small></div>
+<div class="stat"><b id="wishCount">0</b><small>Dreams</small></div>
+<div class="stat"><b id="songCount">0</b><small>Songs</small></div>
+<div class="stat"><b id="dayCount">0</b><small>Days together</small></div>
+</div>
 </section>
 
-<footer><h2>🐻 Bubu ❤️ Dudu 🐼</h2><p>Made with unnecessary drama, unlimited hugs and a dangerous amount of cuteness.</p><p style="opacity:.75;margin-top:12px">Fan-style demo website • 2026</p></footer>
-<button id="topBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button><div class="toast" id="toast"></div>
+</main>
+
+<footer>
+<div class="container">
+<div style="font-size:25px;font-weight:1000">🐼 Bubu <span style="color:#ff6fa8">×</span> Dudu</div>
+<p>A little digital universe for two.</p>
+<p>© 2026 Bubu × Dudu • Fan-style interactive experience</p>
+<p style="font-size:11px;margin-top:12px">
+Images shown from publicly accessible web sources for prototype/demo use.
+For public commercial deployment, replace them with assets you have permission to use.
+</p>
+</div>
+</footer>
+
+<div class="modal" id="storyModal">
+<div class="modal-box">
+<button class="close" onclick="closeModal('storyModal')">×</button>
+<span class="eyebrow">YOUR STORY</span>
+<h3 id="storyTitle"></h3>
+<p id="storyBody"></p>
+<button class="btn btn-primary" style="margin-top:20px" onclick="closeModal('storyModal')">Keep this memory ❤️</button>
+</div>
+</div>
+
+<div class="modal" id="letterModal">
+<div class="modal-box">
+<button class="close" onclick="closeModal('letterModal')">×</button>
+<span class="eyebrow">OPEN WHEN</span>
+<h3 id="letterTitle"></h3>
+<p id="letterBody"></p>
+</div>
+</div>
+
+<div class="modal" id="imageModal" onclick="if(event.target.id==='imageModal')closeModal('imageModal')">
+<div class="modal-box lightbox">
+<button class="close" onclick="closeModal('imageModal')">×</button>
+<img id="lightboxImage" src="" alt="">
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="hearts" id="hearts"></div>
 
 <script>
-const quotes=[
- ["You are my favourite notification, favourite problem and favourite person.","— Bubu to Dudu 💗"],
- ["I may fight with you all day, but I still want you beside me at night.","— Dudu 🐼"],
- ["My mood improves suspiciously fast when you text me.","— Bubu 🐻"],
- ["We are 50% love, 30% food, 20% unnecessary arguments.","— Relationship Mathematics 😌"],
- ["Even after a fight, my heart still checks whether you ate.","— Soft Bubu 💕"],
- ["I don't need a perfect day. I just need a little time with you.","— Dudu 🌷"],
- ["You annoy me professionally and love me personally.","— Bubu 😤❤️"],
- ["Home is not a place. Sometimes it is one ridiculously cute person.","— Bubu × Dudu 🏡"],
- ["If we stop teasing each other, please check whether we are okay.","— Chaos Department 😂"],
- ["Come here. I am still angry, but I need a hug.","— Every Bubu Dudu Fight 🫂"]
+/* ==========================================================
+   BUBU × DUDU FRONTEND ENGINE
+   ========================================================== */
+
+const $ = id => document.getElementById(id);
+
+function scrollToId(id){
+    const el=$(id);
+    if(el) el.scrollIntoView({behavior:"smooth"});
+}
+
+function showToast(message){
+    const t=$("toast");
+    t.textContent=message;
+    t.classList.add("show");
+    setTimeout(()=>t.classList.remove("show"),2500);
+}
+
+function burstHearts(){
+    const box=$("hearts");
+    for(let i=0;i<25;i++){
+        const h=document.createElement("span");
+        h.className="heart";
+        h.textContent=["❤️","💕","💗","💖","✨"][Math.floor(Math.random()*5)];
+        h.style.left=Math.random()*100+"%";
+        h.style.animationDelay=Math.random()*.7+"s";
+        box.appendChild(h);
+        setTimeout(()=>h.remove(),2300);
+    }
+}
+
+function surprise(){
+    const choices=[
+        "Send your person a random “I love you.” ❤️",
+        "Plan a surprise food date. 🍕",
+        "Call them instead of texting. 📞",
+        "Send an old favorite photo. 📸",
+        "Ask: “What do you need from me today?” 🫂",
+        "Make a new bucket-list dream together. 🌍"
+    ];
+
+    showToast(choices[Math.floor(Math.random()*choices.length)]);
+    burstHearts();
+}
+
+/* ================= STORY ================= */
+
+const stories={
+begin:{
+ title:"The beginning",
+ body:"Every relationship starts somewhere. Maybe it was a message, a joke, a random conversation or one moment that neither person realized would become important. This chapter is where you write what actually happened."
+},
+fight:{
+ title:"The chaos chapter",
+ body:"Someone got annoyed. Someone said “I'm fine.” Someone definitely was not fine. Then came silence, food, a random meme and eventually the conversation that mattered. The goal isn't never fighting. The goal is learning how to return to each other."
+}
+};
+
+function openStory(key){
+    $("storyTitle").textContent=stories[key].title;
+    $("storyBody").textContent=stories[key].body;
+    $("storyModal").style.display="flex";
+}
+
+/* ================= DAILY QUESTIONS ================= */
+
+const questions=[
+["What tiny thing made you smile today?","Daily"],
+["What is one thing you appreciate about me?","Connection"],
+["What place should we visit together?","Future"],
+["What is one memory you would relive?","Memories"],
+["What food should we try together?","Fun"],
+["What do you need more of from me lately?","Honesty"],
+["What silly thing about me secretly makes you happy?","Playful"]
 ];
-let qIndex=0;
-function newQuote(){let n;do{n=Math.floor(Math.random()*quotes.length)}while(n===qIndex);qIndex=n;document.getElementById('quoteText').textContent=quotes[n][0];document.getElementById('quoteAuthor').textContent=quotes[n][1]}
-function copyQuote(){navigator.clipboard.writeText(document.getElementById('quoteText').textContent+' '+document.getElementById('quoteAuthor').textContent);toast('Quote copied 💗')}
-function filterMood(mood,btn){document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');document.querySelectorAll('.mood-card').forEach(c=>c.style.display=(mood==='all'||c.dataset.mood===mood)?'block':'none')}
-function toggleTheme(){document.body.classList.toggle('dark');document.querySelector('.icon-btn').textContent=document.body.classList.contains('dark')?'☀️':'🌙';localStorage.setItem('bubuTheme',document.body.classList.contains('dark')?'dark':'light')}
-if(localStorage.getItem('bubuTheme')==='dark'){document.body.classList.add('dark');document.querySelector('.icon-btn').textContent='☀️'}
-function hugMeter(){let n=Math.floor(Math.random()*31)+70;document.getElementById('hugFill').style.width=n+'%';document.getElementById('hugText').textContent=n+(n>90?'% — CRITICAL HUG EMERGENCY 🚨':'% — hug required immediately 🫂')}
-function loveCalc(){let a=document.getElementById('name1').value.trim(),b=document.getElementById('name2').value.trim();if(!a||!b){toast('Enter both cute names first 😤');return}let s=(a+b).toLowerCase().split('').reduce((x,c)=>x+c.charCodeAt(0),0);let n=88+(s%13);document.getElementById('loveResult').textContent=n+'% ❤️ '+(n>=97?'Dangerously compatible 😳':'Certified cuties 🥰')}
-const moods=['🥰 Love overload','😤 Tiny fight incoming','😭 Extra emotional','😂 Uncontrollable giggles','🫂 Need a long hug','🍕 Food date mood','😴 Sleepy together','🥺 Missing each other'];
-function pickMood(){document.getElementById('dailyMood').textContent=moods[Math.floor(Math.random()*moods.length)]}
-const surprises=['You owe Dudu one hug 🫂','Bubu gets one forehead kiss 😚','No fighting for the next 10 minutes 😌','Send a “miss you” text right now 💌','Snack date unlocked 🍫','One dramatic apology required 😂','Emergency cuddle activated ❤️'];
-function surpriseMe(){document.getElementById('surpriseText').textContent=surprises[Math.floor(Math.random()*surprises.length)];rainHearts(18)}
-function rainHearts(count=45){for(let i=0;i<count;i++){setTimeout(()=>{let h=document.createElement('div');h.className='heart';h.textContent=['💗','💕','❤️','💖','🩷'][Math.floor(Math.random()*5)];h.style.left=Math.random()*100+'vw';h.style.top=(60+Math.random()*35)+'vh';document.body.appendChild(h);setTimeout(()=>h.remove(),1800)},i*25)}}
-function toast(msg){let t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),1800)}
-function getNotes(){return JSON.parse(localStorage.getItem('bubuNotes')||'[]')}
-function renderNotes(){let box=document.getElementById('noteList'),notes=getNotes();box.innerHTML=notes.length?notes.map((n,i)=>`<div class="note"><span>💌 ${escapeHtml(n)}</span><button onclick="deleteNote(${i})">🗑️</button></div>`).join(''):'<p style="opacity:.65">Your jar is empty. Put something cute in it.</p>'}
-function escapeHtml(s){return s.replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
-function addNote(){let x=document.getElementById('noteInput'),v=x.value.trim();if(!v){toast('Write something first 💌');return}let n=getNotes();n.unshift(v);localStorage.setItem('bubuNotes',JSON.stringify(n.slice(0,20)));x.value='';renderNotes();toast('Love note saved ❤️')}
-function deleteNote(i){let n=getNotes();n.splice(i,1);localStorage.setItem('bubuNotes',JSON.stringify(n));renderNotes()}
-function clearNotes(){localStorage.removeItem('bubuNotes');renderNotes();toast('Jar cleared')}
-renderNotes();
-let topBtn=document.getElementById('topBtn');window.addEventListener('scroll',()=>topBtn.style.display=window.scrollY>400?'block':'none');
+
+let currentQuestion=0;
+
+function newQuestion(){
+    currentQuestion=Math.floor(Math.random()*questions.length);
+    $("questionText").textContent=questions[currentQuestion][0];
+    $("questionCategory").textContent=questions[currentQuestion][1];
+    $("answerInput").value="";
+    $("answerOutput").textContent="Write your answer before revealing anything.";
+}
+
+function saveAnswer(){
+    const value=$("answerInput").value.trim();
+    if(!value){
+        showToast("Write something first ❤️");
+        return;
+    }
+
+    localStorage.setItem("bubu_daily_answer",value);
+    $("answerOutput").innerHTML="🔒 <b>Answer locked.</b><br>Your answer is saved locally in this browser.";
+    showToast("Your answer is locked ❤️");
+}
+
+/* ================= MEMORIES ================= */
+
+function getMemories(){
+    return JSON.parse(localStorage.getItem("bubu_memories")||"[]");
+}
+
+function addMemory(){
+    const title=$("memoryTitle").value.trim();
+    const date=$("memoryDate").value;
+    const note=$("memoryNote").value.trim();
+
+    if(!title){
+        showToast("Give this memory a title.");
+        return;
+    }
+
+    const memories=getMemories();
+
+    memories.unshift({
+        title,
+        date:date || new Date().toISOString().slice(0,10),
+        note
+    });
+
+    localStorage.setItem("bubu_memories",JSON.stringify(memories));
+
+    $("memoryTitle").value="";
+    $("memoryDate").value="";
+    $("memoryNote").value="";
+
+    renderMemories();
+    burstHearts();
+}
+
+function deleteMemory(index){
+    const memories=getMemories();
+    memories.splice(index,1);
+    localStorage.setItem("bubu_memories",JSON.stringify(memories));
+    renderMemories();
+}
+
+function renderMemories(){
+    const memories=getMemories();
+
+    $("memoryList").innerHTML=memories.length
+    ? memories.map((m,i)=>`
+        <div class="memory">
+            <span>📌 <b>${escapeHTML(m.title)}</b>
+            <small>${escapeHTML(m.date)} • ${escapeHTML(m.note||"A beautiful moment.")}</small>
+            </span>
+            <button class="danger" onclick="deleteMemory(${i})">×</button>
+        </div>
+    `).join("")
+    : "<p style='color:#999;margin-top:12px'>No memories yet. Add your first one ❤️</p>";
+
+    $("memoryCount").textContent=memories.length;
+}
+
+/* ================= COUNTDOWN ================= */
+
+function saveTargetDate(){
+    localStorage.setItem("bubu_target",$("targetDate").value);
+}
+
+function updateCountdown(){
+    const target=localStorage.getItem("bubu_target");
+
+    if(!target){
+        return;
+    }
+
+    $("targetDate").value=target;
+
+    const diff=new Date(target).getTime()-Date.now();
+
+    if(diff<=0){
+        $("days").textContent="0";
+        $("hours").textContent="0";
+        $("mins").textContent="0";
+        $("secs").textContent="0";
+        return;
+    }
+
+    $("days").textContent=Math.floor(diff/86400000);
+    $("hours").textContent=Math.floor(diff/3600000)%24;
+    $("mins").textContent=Math.floor(diff/60000)%60;
+    $("secs").textContent=Math.floor(diff/1000)%60;
+}
+
+/* ================= DATES ================= */
+
+const dateIdeas={
+any:[
+"Sunset walk + favorite food 🌅",
+"Movie night with phones away 🎬",
+"Try a completely new café ☕",
+"Cook something neither of you knows 🍳",
+"Take a random train/bus ride and explore 🚆",
+"Make a shared playlist and listen together 🎵"
+],
+cozy:[
+"Blanket + movie + snacks 🍿",
+"Cook dinner together 🍳",
+"Long call with no distractions 📞",
+"Make a silly photo album 📸"
+],
+adventure:[
+"Explore a place neither of you knows 🗺️",
+"Try a new activity together 🎯",
+"Sunrise/sunset adventure 🌅",
+"Plan a spontaneous day trip 🚗"
+],
+food:[
+"Try each other's favorite food 🍜",
+"Rate five desserts brutally 😂",
+"Cook a three-course meal together 🍝",
+"Find the best street food nearby 🌮"
+],
+cheap:[
+"Park walk + homemade snacks 🌳",
+"Free museum/gallery day 🖼️",
+"Cook using only what is already at home 🍳",
+"Watch the sunset with chai ☕"
+],
+longdistance:[
+"Virtual dinner date 🍕📱",
+"Watch the same movie together 🎬",
+"Play an online game 🎮",
+"Open an old memory and talk about it 📸"
+]
+};
+
+function generateDate(){
+    const mood=$("dateMood").value;
+    const list=dateIdeas[mood]||dateIdeas.any;
+    $("dateOutput").innerHTML="💡 <b>"+list[Math.floor(Math.random()*list.length)]+"</b>";
+}
+
+/* ================= LOVE MAP ================= */
+
+function addPlace(){
+    const place=$("placeInput").value.trim();
+
+    if(!place){
+        showToast("Enter a place.");
+        return;
+    }
+
+    const places=JSON.parse(localStorage.getItem("bubu_places")||"[]");
+    places.push(place);
+
+    localStorage.setItem("bubu_places",JSON.stringify(places));
+    $("placeInput").value="";
+    renderPlaces();
+}
+
+function renderPlaces(){
+    const places=JSON.parse(localStorage.getItem("bubu_places")||"[]");
+
+    $("placeList").innerHTML=places.length
+    ? places.map((p,i)=>`📍 ${escapeHTML(p)}
+        <button class="danger" onclick="deletePlace(${i})">×</button><br>`
+      ).join("")
+    : "No places yet.";
+}
+
+function deletePlace(i){
+    const places=JSON.parse(localStorage.getItem("bubu_places")||"[]");
+    places.splice(i,1);
+    localStorage.setItem("bubu_places",JSON.stringify(places));
+    renderPlaces();
+}
+
+/* ================= PLAYLIST ================= */
+
+function addSong(){
+    const value=$("songInput").value.trim();
+
+    if(!value)return;
+
+    const songs=JSON.parse(localStorage.getItem("bubu_songs")||"[]");
+    songs.push(value);
+
+    localStorage.setItem("bubu_songs",JSON.stringify(songs));
+
+    $("songInput").value="";
+    renderSongs();
+}
+
+function renderSongs(){
+    const songs=JSON.parse(localStorage.getItem("bubu_songs")||"[]");
+
+    $("songList").innerHTML=songs.length
+    ? songs.map((s,i)=>`
+        <div class="song">
+        🎵 ${escapeHTML(s)}
+        <button class="danger" onclick="deleteSong(${i})">×</button>
+        </div>
+    `).join("")
+    : "<p style='color:#999;margin-top:10px'>Your soundtrack is empty.</p>";
+
+    $("songCount").textContent=songs.length;
+}
+
+function deleteSong(i){
+    const songs=JSON.parse(localStorage.getItem("bubu_songs")||"[]");
+    songs.splice(i,1);
+    localStorage.setItem("bubu_songs",JSON.stringify(songs));
+    renderSongs();
+}
+
+/* ================= BUCKET LIST ================= */
+
+function addWish(){
+    const text=$("wishInput").value.trim();
+    const category=$("wishCategory").value;
+
+    if(!text){
+        showToast("Add a dream first.");
+        return;
+    }
+
+    const wishes=JSON.parse(localStorage.getItem("bubu_wishes")||"[]");
+
+    wishes.push({
+        text,
+        category,
+        done:false
+    });
+
+    localStorage.setItem("bubu_wishes",JSON.stringify(wishes));
+
+    $("wishInput").value="";
+    renderWishes();
+}
+
+function toggleWish(i){
+    const wishes=JSON.parse(localStorage.getItem("bubu_wishes")||"[]");
+    wishes[i].done=!wishes[i].done;
+
+    localStorage.setItem("bubu_wishes",JSON.stringify(wishes));
+
+    if(wishes[i].done)burstHearts();
+
+    renderWishes();
+}
+
+function deleteWish(i){
+    const wishes=JSON.parse(localStorage.getItem("bubu_wishes")||"[]");
+    wishes.splice(i,1);
+    localStorage.setItem("bubu_wishes",JSON.stringify(wishes));
+    renderWishes();
+}
+
+function renderWishes(){
+    const wishes=JSON.parse(localStorage.getItem("bubu_wishes")||"[]");
+
+    $("wishList").innerHTML=wishes.length
+    ? wishes.map((w,i)=>`
+        <div class="memory">
+            <span>
+            ${w.done?"✅":"⬜"} <b style="${w.done?'text-decoration:line-through;color:#999':''}">
+            ${escapeHTML(w.text)}</b>
+            <small>${escapeHTML(w.category)}</small>
+            </span>
+            <button class="btn btn-soft" onclick="toggleWish(${i})">${w.done?"Undo":"Done"}</button>
+            <button class="danger" onclick="deleteWish(${i})">×</button>
+        </div>
+    `).join("")
+    : "<p style='color:#999'>No dreams yet. Add something you want to experience together.</p>";
+
+    $("wishCount").textContent=wishes.length;
+}
+
+/* ================= OPEN WHEN ================= */
+
+const letters={
+sad:[
+"You don't have to be okay every second. Take a breath. Eat something. Rest. And remember: one difficult day doesn't define your whole story. 🫂"
+],
+miss:[
+"If you miss me, imagine me sitting beside you, stealing your snacks and annoying you until you smile. ❤️"
+],
+fight:[
+"We can disagree without becoming enemies. Let's solve the problem, not attack each other. I choose us over winning. 🫂"
+],
+happy:[
+"Keep this moment. Take a photo. Laugh loudly. Tell your person. Happiness becomes even better when it is shared. 🥰"
+]
+};
+
+function openLetter(type){
+    $("letterTitle").textContent=
+        type==="sad"?"Open when you're sad":
+        type==="miss"?"Open when you miss me":
+        type==="fight"?"Open after a fight":
+        "Open when you're happy";
+
+    $("letterBody").textContent=
+        letters[type][Math.floor(Math.random()*letters[type].length)];
+
+    $("letterModal").style.display="flex";
+}
+
+/* ================= MINI GAMES ================= */
+
+function catchHearts(){
+    const n=Math.floor(Math.random()*91)+10;
+    $("gameResult").innerHTML=`You caught <b>${n} hearts</b>! 💗`;
+    burstHearts();
+}
+
+function compliment(){
+    const list=[
+        "Your smile is someone's favorite notification. 📱❤️",
+        "You make ordinary moments feel special. 🥹",
+        "You deserve an unreasonable amount of hugs today. 🫂",
+        "You're the plot twist someone didn't know they needed. 💕"
+    ];
+
+    $("gameResult").textContent=list[Math.floor(Math.random()*list.length)];
+}
+
+function fightResolver(){
+    const winner=Math.random()<.5?"Bubu":"Dudu";
+    $("gameResult").innerHTML=`Today's official ruling: <b>${winner}</b> says sorry first. ⚖️😂`;
+}
+
+function fortune(){
+    const list=[
+        "A surprise hug is coming. 🔮",
+        "Food will solve your next disagreement. 🔮🍕",
+        "Someone is secretly missing the other person right now. 🥺",
+        "Your next memory will be completely unplanned. ✨"
+    ];
+
+    $("gameResult").textContent=list[Math.floor(Math.random()*list.length)];
+}
+
+/* ================= IMAGE LIGHTBOX ================= */
+
+function openImage(card){
+    const img=card.querySelector("img");
+
+    $("lightboxImage").src=img.src;
+    $("imageModal").style.display="flex";
+}
+
+/* ================= THEME ================= */
+
+function toggleTheme(){
+    document.body.classList.toggle("dark");
+
+    localStorage.setItem(
+        "bubu_theme",
+        document.body.classList.contains("dark")?"dark":"light"
+    );
+}
+
+/* ================= UTILITY ================= */
+
+function escapeHTML(value){
+    return String(value).replace(/[&<>"']/g,c=>({
+        "&":"&amp;",
+        "<":"&lt;",
+        ">":"&gt;",
+        '"':"&quot;",
+        "'":"&#039;"
+    }[c]));
+}
+
+function closeModal(id){
+    $(id).style.display="none";
+}
+
+/* ================= INITIALIZATION ================= */
+
+function restore(){
+    if(localStorage.getItem("bubu_theme")==="dark"){
+        document.body.classList.add("dark");
+    }
+
+    if(localStorage.getItem("bubu_daily_answer")){
+        $("answerOutput").innerHTML="🔒 <b>Previous answer saved locally.</b>";
+    }
+
+    renderMemories();
+    renderPlaces();
+    renderSongs();
+    renderWishes();
+    updateCountdown();
+}
+
+setInterval(updateCountdown,1000);
+
+restore();
+
+/* ESC CLOSE */
+document.addEventListener("keydown",e=>{
+    if(e.key==="Escape"){
+        ["storyModal","letterModal","imageModal"].forEach(closeModal);
+    }
+});
+
+/* horizontal wheel navigation */
+document.querySelectorAll(".horizontal").forEach(rail=>{
+    rail.addEventListener("wheel",e=>{
+        if(Math.abs(e.deltaY)>Math.abs(e.deltaX)){
+            e.preventDefault();
+            rail.scrollLeft+=e.deltaY;
+        }
+    },{passive:false});
+});
 </script>
+
 </body>
 </html>
-'''
+"""
 
+@app.route("/")
+def home():
+    return render_template_string(HTML)
 
 @app.route("/health")
 def health():
-    return jsonify({"status": "healthy", "application": "Bubu Dudu World"})
-
+    return jsonify({
+        "status":"healthy",
+        "application":"Bubu Dudu Couple Universe",
+        "timestamp":datetime.utcnow().isoformat()+"Z"
+    })
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    app.run(host="0.0.0.0",port=5000,debug=True)
