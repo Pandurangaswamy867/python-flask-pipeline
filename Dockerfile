@@ -3,7 +3,7 @@
 # Build Stage
 # =========================
 
-FROM python:3.9-slim AS build
+FROM python:3.11-slim AS build
 
 # Set working directory
 WORKDIR /app
@@ -12,28 +12,32 @@ WORKDIR /app
 COPY app.py .
 
 # Install Flask
-RUN pip install --no-cache-dir flask
+RUN pip install --no-cache-dir --prefix=/install flask
 
 # =========================
 # Runtime Stage
 # =========================
 
-FROM python:3.9-slim
+FROM python:3.11-slim
 
 # Set working directory
 WORKDIR /app
 
-# Copy installed packages from build stage
-COPY --from=build /usr/local/lib/python3.9 /usr/local/lib/python3.9
+# Copy installed Python packages
+COPY --from=build /install /usr/local
 
-# Copy application from build stage
-COPY --from=build /app /app
+# Copy application file
+COPY --from=build /app/app.py .
+
+# Environment variables
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Flask configuration
+ENV FLASK_APP=app.py
 
 # Expose Flask port
 EXPOSE 5000
 
-# Environment variable
-ENV PYTHONUNBUFFERED=1
-
-# Start application
+# Start Flask application
 CMD ["python", "app.py"]
