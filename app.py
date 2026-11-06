@@ -762,722 +762,429 @@ TEMPLATE = r"""
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>Bubu × Dudu Bank</title>
-
+<meta name="theme-color" content="#101c2c">
+<title>{% if page == 'login' %}Sign in{% elif page == 'register' %}Create account{% else %}{{ page|title }}{% endif %} · Bubu Finance</title>
 <style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --pink: #f6a6c8;
-    --pink-dark: #e77eaa;
-    --cream: #fff8f4;
-    --brown: #624b55;
-    --green: #238b68;
-    --red: #d85a69;
-    --white: #ffffff;
+  --navy: #101c2c;
+  --navy-2: #17283d;
+  --navy-3: #243a52;
+  --ink: #182536;
+  --muted: #788697;
+  --line: #e8edf2;
+  --canvas: #f4f7fa;
+  --surface: #ffffff;
+  --teal: #12a889;
+  --teal-dark: #07866d;
+  --teal-soft: #e5f7f2;
+  --green: #16865f;
+  --green-soft: #e7f6ef;
+  --red: #d95763;
+  --red-soft: #fff0f1;
+  --amber: #b7791f;
+  --shadow: 0 8px 28px rgba(21, 39, 58, .055);
+  --radius: 16px;
 }
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
 body {
-    font-family: Arial, sans-serif;
-    background: var(--cream);
-    color: var(--brown);
+  margin: 0; background: var(--canvas); color: var(--ink);
+  font-family: 'DM Sans', Arial, sans-serif; font-size: 14px;
+  -webkit-font-smoothing: antialiased;
 }
-
-header {
-    background: var(--white);
-    padding: 18px 6%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 3px 15px #0000000a;
-    flex-wrap: wrap;
-    gap: 15px;
+button, input { font: inherit; }
+a { color: inherit; }
+.app-shell { min-height: 100vh; }
+.sidebar {
+  width: 248px; position: fixed; inset: 0 auto 0 0; z-index: 20;
+  background: var(--navy); color: #d6e0ea; padding: 26px 17px;
+  display: flex; flex-direction: column;
 }
-
-.logo {
-    font-size: 23px;
-    font-weight: bold;
-    color: var(--pink-dark);
+.brand { display: flex; align-items: center; gap: 11px; padding: 0 10px 32px; }
+.brand-mark {
+  width: 39px; height: 39px; display: grid; place-items: center;
+  background: linear-gradient(145deg, #20c6a1, #087e70); color: white;
+  border-radius: 12px; font-size: 19px; box-shadow: 0 7px 18px #0aa88935;
 }
-
-nav {
-    display: flex;
-    gap: 17px;
-    flex-wrap: wrap;
-    align-items: center;
+.brand-name { font: 800 17px 'Manrope', sans-serif; color: #fff; letter-spacing: -.5px; }
+.brand-sub { color: #8294a8; font-size: 10px; margin-top: 2px; letter-spacing: 1.3px; text-transform: uppercase; }
+.nav-label { color: #71859a; font-size: 10px; font-weight: 700; letter-spacing: 1.5px; padding: 12px 12px 9px; text-transform: uppercase; }
+.nav-list { display: grid; gap: 5px; }
+.nav-link {
+  display: flex; align-items: center; gap: 13px; padding: 12px 13px;
+  color: #aebdcb; text-decoration: none; border-radius: 10px;
+  font-size: 13px; font-weight: 600; transition: .18s ease;
 }
-
-nav a {
-    text-decoration: none;
-    color: var(--brown);
-    font-size: 14px;
-    font-weight: bold;
+.nav-link:hover { background: #ffffff0c; color: #fff; }
+.nav-link.active { color: #fff; background: linear-gradient(90deg, #0da88935, #0da88912); box-shadow: inset 3px 0 #19c5a0; }
+.nav-icon { width: 19px; text-align: center; font-size: 16px; opacity: .95; }
+.sidebar-bottom { margin-top: auto; }
+.demo-note {
+  border: 1px solid #ffffff17; border-radius: 12px; padding: 13px;
+  color: #9fb0c1; font-size: 11px; line-height: 1.6; background: #ffffff08;
 }
-
-nav a:hover {
-    color: var(--pink-dark);
+.demo-note strong { display: block; color: #e4edf5; font-size: 12px; margin-bottom: 3px; }
+.main-area { margin-left: 248px; min-height: 100vh; }
+.topbar {
+  height: 76px; background: #fff; border-bottom: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 38px; position: sticky; top: 0; z-index: 10;
 }
-
-.container {
-    max-width: 1150px;
-    margin: 35px auto;
-    padding: 0 20px;
+.breadcrumb { color: var(--muted); font-size: 12px; }
+.breadcrumb strong { color: var(--ink); font-weight: 700; }
+.top-actions { display: flex; align-items: center; gap: 18px; }
+.live-pill { display: inline-flex; align-items: center; gap: 7px; color: #16865f; background: var(--green-soft); border-radius: 30px; padding: 7px 11px; font-size: 11px; font-weight: 700; }
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: #20ad78; box-shadow: 0 0 0 3px #20ad7820; }
+.profile { display: flex; align-items: center; gap: 10px; }
+.avatar { width: 36px; height: 36px; border-radius: 50%; background: #e4f4ef; color: #07866d; display: grid; place-items: center; font-weight: 800; }
+.profile-name { font-size: 12px; font-weight: 700; }
+.profile-caption { color: var(--muted); font-size: 10px; margin-top: 2px; }
+.page-wrap { max-width: 1440px; margin: auto; padding: 34px 38px 50px; }
+.page-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; margin-bottom: 26px; }
+h1 { font: 800 25px 'Manrope', sans-serif; letter-spacing: -.8px; margin: 0 0 7px; color: #172638; }
+h2 { font: 750 16px 'Manrope', sans-serif; margin: 0; color: #1c2c3e; }
+.subtitle { color: var(--muted); font-size: 12px; margin: 0; }
+.eyebrow { color: var(--teal-dark); font-size: 10px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 9px; }
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 17px; margin-bottom: 20px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 21px; box-shadow: var(--shadow); min-width: 0; }
+.metric-card { position: relative; overflow: hidden; }
+.metric-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.metric-label { color: #7d8a99; font-size: 10px; font-weight: 800; letter-spacing: 1.1px; text-transform: uppercase; }
+.metric-icon { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; background: var(--teal-soft); color: var(--teal-dark); font-size: 16px; }
+.metric-value { font: 800 25px 'Manrope', sans-serif; letter-spacing: -.8px; margin: 15px 0 7px; color: #172638; }
+.metric-foot { color: var(--muted); font-size: 11px; }
+.metric-foot strong { color: var(--green); }
+.positive { color: var(--green) !important; }
+.negative { color: var(--red) !important; }
+.pill { display: inline-flex; align-items: center; border-radius: 30px; padding: 5px 9px; font-size: 10px; font-weight: 800; background: var(--green-soft); color: var(--green); }
+.pill.down { background: var(--red-soft); color: var(--red); }
+.hero-card {
+  background: linear-gradient(120deg, #14263b 0%, #1b4052 100%);
+  color: white; border: 0; position: relative; overflow: hidden;
 }
-
-h1 {
-    margin-bottom: 10px;
-    font-size: 28px;
+.hero-card:after { content: ""; position: absolute; width: 240px; height: 240px; border: 1px solid #ffffff16; border-radius: 50%; right: -55px; top: -105px; box-shadow: 0 0 0 28px #ffffff08, 0 0 0 58px #ffffff05; }
+.hero-card .metric-label, .hero-card .metric-foot { color: #b7c8d4; }
+.hero-card .metric-value { color: white; font-size: 31px; }
+.hero-card .metric-icon { background: #ffffff18; color: #72e0c4; }
+.section-head { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 17px; }
+.section-link { color: var(--teal-dark); font-size: 11px; font-weight: 800; text-decoration: none; }
+.content-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(260px, .9fr); gap: 18px; margin-bottom: 20px; }
+.table-wrap { overflow-x: auto; width: 100%; }
+table { width: 100%; border-collapse: collapse; min-width: 570px; }
+th { text-align: left; padding: 12px 13px; color: #8a97a5; background: #f8fafc; font-size: 9px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; white-space: nowrap; }
+td { padding: 14px 13px; border-bottom: 1px solid #edf1f5; color: #405064; font-size: 12px; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+tbody tr:hover { background: #fbfdfd; }
+.stock-cell { display: flex; align-items: center; gap: 10px; }
+.stock-badge { width: 30px; height: 30px; border-radius: 9px; background: #edf4f7; color: #31556a; display: grid; place-items: center; font-size: 10px; font-weight: 800; }
+.stock-name { font-weight: 700; color: #26384b; }
+.stock-symbol { font-size: 10px; color: #8b98a6; margin-top: 3px; }
+.muted { color: var(--muted); }
+.btn {
+  border: 0; border-radius: 9px; padding: 10px 15px; display: inline-flex;
+  justify-content: center; align-items: center; gap: 7px; cursor: pointer;
+  text-decoration: none; font-size: 11px; font-weight: 800; transition: .18s ease;
 }
-
-.subtitle {
-    color: #987f8a;
-    margin-bottom: 25px;
-}
-
-.grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 18px;
-    margin: 25px 0;
-}
-
-.card {
-    background: var(--white);
-    padding: 24px;
-    border-radius: 18px;
-    box-shadow: 0 5px 20px #00000008;
-}
-
-.card h3 {
-    font-size: 14px;
-    color: #9b8290;
-    margin-bottom: 15px;
-}
-
-.amount {
-    font-size: 26px;
-    font-weight: bold;
-}
-
-.pink {
-    color: var(--pink-dark);
-}
-
-.green {
-    color: var(--green);
-}
-
-.red {
-    color: var(--red);
-}
-
-button, .button {
-    background: var(--pink-dark);
-    color: white;
-    border: none;
-    padding: 11px 17px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: bold;
-    text-decoration: none;
-    display: inline-block;
-}
-
-button:hover, .button:hover {
-    opacity: 0.85;
-}
-
-button.secondary {
-    background: #eadde4;
-    color: var(--brown);
-}
-
-button.danger {
-    background: var(--red);
-}
-
+.btn-primary { background: var(--teal); color: white; box-shadow: 0 5px 12px #12a88925; }
+.btn-primary:hover { background: var(--teal-dark); transform: translateY(-1px); }
+.btn-light { background: #eef3f6; color: #42566a; }
+.btn-light:hover { background: #e2eaef; }
+.btn-danger { background: var(--red-soft); color: var(--red); }
+.btn-danger:hover { background: #ffe2e5; }
+.btn-small { padding: 7px 10px; font-size: 10px; }
+.inline-form { display: inline-flex; align-items: center; gap: 6px; }
 input {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid #eadde4;
-    border-radius: 9px;
-    margin: 8px 0 15px;
-    font-size: 14px;
+  width: 100%; border: 1px solid #dfe6ec; background: #fbfcfd;
+  border-radius: 9px; padding: 11px 12px; color: var(--ink);
+  outline: none; transition: .18s ease;
 }
-
-label {
-    font-size: 13px;
-    font-weight: bold;
+input:focus { border-color: #37b99e; background: white; box-shadow: 0 0 0 3px #12a88915; }
+input[type=number].qty { width: 65px; padding: 8px 7px; }
+label { display: block; color: #536477; font-size: 11px; font-weight: 700; margin: 0 0 7px; }
+.field { margin-bottom: 15px; }
+.flash { padding: 12px 15px; border-radius: 10px; margin-bottom: 16px; font-size: 12px; font-weight: 600; border: 1px solid #ccebdd; color: #137a58; background: #effaf5; }
+.flash.error { border-color: #f6d2d6; color: #bd4351; background: #fff4f5; }
+.deposit-form { display: flex; gap: 9px; align-items: end; }
+.deposit-form .field { flex: 1; margin: 0; }
+.deposit-form input { min-width: 0; }
+.quick-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 16px; }
+.empty { padding: 28px 15px; text-align: center; color: #8996a4; font-size: 12px; }
+.auth-page {
+  min-height: 100vh; display: grid; grid-template-columns: 1.05fr .95fr;
+  background: #f4f7fa;
 }
-
-form.inline {
-    display: inline-block;
+.auth-visual {
+  background: radial-gradient(circle at 20% 15%, #24566a 0, transparent 35%),
+              linear-gradient(145deg, #101c2c, #19394b);
+  color: white; padding: 8vw; display: flex; flex-direction: column; justify-content: space-between;
+  position: relative; overflow: hidden;
 }
-
-.table-wrap {
-    overflow-x: auto;
-    background: white;
-    border-radius: 15px;
-    margin-top: 20px;
+.auth-visual:after { content: ""; position: absolute; width: 500px; height: 500px; border: 1px solid #ffffff18; border-radius: 50%; right: -170px; bottom: -190px; box-shadow: 0 0 0 45px #ffffff08, 0 0 0 90px #ffffff05; }
+.auth-visual .brand { padding: 0; position: relative; z-index: 1; }
+.auth-copy { max-width: 520px; position: relative; z-index: 1; }
+.auth-copy h2 { color: white; font: 800 clamp(32px, 4vw, 54px) 'Manrope', sans-serif; line-height: 1.12; letter-spacing: -2px; margin: 0 0 18px; }
+.auth-copy p { color: #b7c8d4; font-size: 14px; line-height: 1.8; max-width: 410px; }
+.auth-stats { display: flex; gap: 35px; margin-top: 38px; }
+.auth-stat strong { display: block; font: 800 20px 'Manrope', sans-serif; color: #72e0c4; }
+.auth-stat span { color: #9fb2c2; font-size: 10px; }
+.auth-footer { color: #8298aa; font-size: 10px; position: relative; z-index: 1; }
+.auth-panel { display: grid; place-items: center; padding: 35px 24px; }
+.auth-box { width: 100%; max-width: 410px; background: white; border: 1px solid var(--line); border-radius: 20px; padding: 36px; box-shadow: 0 18px 55px #17283d0c; }
+.auth-box h1 { font-size: 25px; margin-bottom: 8px; }
+.auth-box .subtitle { margin-bottom: 28px; line-height: 1.6; }
+.auth-box .btn { width: 100%; padding: 13px; margin-top: 5px; }
+.auth-switch { text-align: center; color: var(--muted); font-size: 11px; margin-top: 23px; }
+.auth-switch a { color: var(--teal-dark); font-weight: 800; text-decoration: none; }
+.security-note { background: #f4f8fa; border-radius: 9px; padding: 11px; margin-top: 18px; color: #7d8b99; font-size: 10px; line-height: 1.5; }
+.footer { text-align: center; color: #98a4b0; font-size: 10px; padding: 28px 10px; }
+.notice { color: #8b6b2c; background: #fff8e8; border: 1px solid #f2e5c5; padding: 11px 13px; border-radius: 9px; font-size: 11px; line-height: 1.6; margin-top: 15px; }
+.balance-large { font: 800 22px 'Manrope', sans-serif; color: #172638; margin-top: 8px; }
+@media (max-width: 1050px) {
+  .sidebar { width: 210px; }
+  .main-area { margin-left: 210px; }
+  .page-wrap { padding: 28px 24px 40px; }
+  .topbar { padding: 0 24px; }
+  .content-grid { grid-template-columns: 1fr; }
 }
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 600px;
+@media (max-width: 760px) {
+  .sidebar { position: static; width: 100%; padding: 13px 15px; }
+  .brand { padding: 0 4px 12px; }
+  .nav-label, .sidebar-bottom { display: none; }
+  .nav-list { display: flex; overflow-x: auto; gap: 5px; padding-bottom: 2px; }
+  .nav-link { flex: 0 0 auto; padding: 9px 11px; font-size: 11px; }
+  .nav-icon { display: none; }
+  .main-area { margin-left: 0; }
+  .topbar { height: 58px; padding: 0 17px; }
+  .page-wrap { padding: 24px 16px 35px; }
+  .grid { grid-template-columns: 1fr; gap: 11px; }
+  .page-heading { flex-direction: column; }
+  .auth-page { grid-template-columns: 1fr; }
+  .auth-visual { display: none; }
+  .auth-panel { min-height: 100vh; padding: 20px; }
+  .auth-box { padding: 27px 22px; }
+  .deposit-form { align-items: stretch; flex-direction: column; }
 }
-
-th, td {
-    padding: 15px;
-    border-bottom: 1px solid #f2e9ee;
-    text-align: left;
-    font-size: 14px;
-}
-
-th {
-    color: #987f8a;
-    background: #fffafd;
-}
-
-tr:last-child td {
-    border-bottom: none;
-}
-
-.flash {
-    padding: 13px 17px;
-    border-radius: 10px;
-    margin-bottom: 15px;
-    background: #e6f7ef;
-    color: #238b68;
-}
-
-.flash.error {
-    background: #ffe9ed;
-    color: #c13d55;
-}
-
-.auth {
-    max-width: 420px;
-    margin: 70px auto;
-    padding: 30px;
-    background: white;
-    border-radius: 20px;
-    box-shadow: 0 10px 35px #0000000c;
-}
-
-.auth h1 {
-    text-align: center;
-    color: var(--pink-dark);
-}
-
-.auth p {
-    text-align: center;
-    margin: 15px 0 25px;
-    color: #987f8a;
-}
-
-.auth button {
-    width: 100%;
-}
-
-.auth a {
-    color: var(--pink-dark);
-}
-
-.actions {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    align-items: center;
-}
-
-.stock-symbol {
-    font-weight: bold;
-}
-
-.small {
-    font-size: 12px;
-    color: #987f8a;
-}
-
-footer {
-    text-align: center;
-    padding: 30px;
-    color: #987f8a;
-    font-size: 12px;
-}
-
-@media(max-width: 650px) {
-    header {
-        align-items: flex-start;
-        flex-direction: column;
-    }
-
-    nav {
-        gap: 12px;
-    }
-
-    h1 {
-        font-size: 23px;
-    }
-
-    .container {
-        margin-top: 25px;
-    }
-}
-
 </style>
 </head>
-
 <body>
 
-{% if page not in ['login', 'register'] %}
-
-<header>
-
-    <div class="logo">🐻 Bubu × Dudu Bank 🐼</div>
-
-    <nav>
-        <a href="{{ url_for('dashboard') }}">Dashboard</a>
-        <a href="{{ url_for('stock_market') }}">Market</a>
-        <a href="{{ url_for('portfolio') }}">Portfolio</a>
-        <a href="{{ url_for('transaction_history') }}">Transactions</a>
-
-        <form method="POST" action="{{ url_for('logout') }}" class="inline">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <button class="secondary">Logout</button>
-        </form>
-    </nav>
-
-</header>
-
-{% endif %}
-
-
 {% if page in ['login', 'register'] %}
+<div class="auth-page">
+  <section class="auth-visual">
+    <div class="brand">
+      <div class="brand-mark">B</div>
+      <div><div class="brand-name">Bubu Finance</div><div class="brand-sub">Banking · Investing · Growing</div></div>
+    </div>
+    <div class="auth-copy">
+      <div class="eyebrow" style="color:#72e0c4">YOUR MONEY, YOUR MOVES</div>
+      <h2>A smarter way to explore your financial world.</h2>
+      <p>Manage your demo balance, explore the market, and understand your portfolio from one clean dashboard.</p>
+      <div class="auth-stats">
+        <div class="auth-stat"><strong>01</strong><span>Banking overview</span></div>
+        <div class="auth-stat"><strong>02</strong><span>Market simulator</span></div>
+        <div class="auth-stat"><strong>03</strong><span>Portfolio insights</span></div>
+      </div>
+    </div>
+    <div class="auth-footer">Bubu Finance · Educational trading simulator</div>
+  </section>
+  <section class="auth-panel">
+    <div class="auth-box">
+      <div class="eyebrow">WELCOME TO BUBU FINANCE</div>
+      {% if page == 'login' %}
+        <h1>Sign in to your account</h1>
+        <p class="subtitle">Enter your details to access your financial dashboard.</p>
+      {% else %}
+        <h1>Create your account</h1>
+        <p class="subtitle">Set up your demo account and start exploring.</p>
+      {% endif %}
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}
+      {% endwith %}
+      {% if page == 'login' %}
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field"><label>Email address</label><input type="email" name="email" placeholder="you@example.com" autocomplete="email" required></div>
+        <div class="field"><label>Password</label><input type="password" name="password" placeholder="Enter your password" autocomplete="current-password" required></div>
+        <button class="btn btn-primary" type="submit">Sign in securely →</button>
+      </form>
+      <div class="auth-switch">New to Bubu Finance? <a href="{{ url_for('register') }}">Create an account</a></div>
+      {% else %}
+      <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field"><label>Full name</label><input type="text" name="name" placeholder="Your name" autocomplete="name" required></div>
+        <div class="field"><label>Email address</label><input type="email" name="email" placeholder="you@example.com" autocomplete="email" required></div>
+        <div class="field"><label>Password</label><input type="password" name="password" minlength="8" placeholder="At least 8 characters" autocomplete="new-password" required></div>
+        <button class="btn btn-primary" type="submit">Create demo account →</button>
+      </form>
+      <div class="auth-switch">Already registered? <a href="{{ url_for('login') }}">Sign in</a></div>
+      {% endif %}
+      <div class="security-note">🔒 Demo environment. Do not use a real banking password or sensitive financial information.</div>
+    </div>
+  </section>
+</div>
 
-<div class="auth">
+{% else %}
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">B</div>
+      <div><div class="brand-name">Bubu Finance</div><div class="brand-sub">Personal wealth</div></div>
+    </div>
+    <div class="nav-label">Workspace</div>
+    <nav class="nav-list">
+      <a class="nav-link {{ 'active' if page == 'dashboard' else '' }}" href="{{ url_for('dashboard') }}"><span class="nav-icon">▦</span>Overview</a>
+      <a class="nav-link {{ 'active' if page == 'market' else '' }}" href="{{ url_for('stock_market') }}"><span class="nav-icon">⌁</span>Market</a>
+      <a class="nav-link {{ 'active' if page == 'portfolio' else '' }}" href="{{ url_for('portfolio') }}"><span class="nav-icon">◫</span>My portfolio</a>
+      <a class="nav-link {{ 'active' if page == 'transactions' else '' }}" href="{{ url_for('transaction_history') }}"><span class="nav-icon">↔</span>Transactions</a>
+    </nav>
+    <div class="sidebar-bottom">
+      <div class="demo-note"><strong>Demo account</strong>All balances, deposits and trades are simulated. No real funds or securities are involved.</div>
+    </div>
+  </aside>
 
-    <h1>🐻 Bubu × Dudu 🐼</h1>
-    <p>Banking and Trading Universe</p>
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-            <div class="flash {{ category }}">{{ message }}</div>
-        {% endfor %}
-    {% endwith %}
-
-    {% if page == 'login' %}
-
-        <form method="POST">
-
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-            <label>Email address</label>
-            <input type="email" name="email" placeholder="Enter your email" required>
-
-            <label>Password</label>
-            <input type="password" name="password" placeholder="Enter password" required>
-
-            <button type="submit">Login to your account</button>
-
+  <main class="main-area">
+    <header class="topbar">
+      <div class="breadcrumb">Workspace <span style="padding:0 7px;color:#c1cbd4">/</span> <strong>{{ {'dashboard':'Overview','market':'Market','portfolio':'My portfolio','transactions':'Transactions'}.get(page, page|title) }}</strong></div>
+      <div class="top-actions">
+        <span class="live-pill"><span class="live-dot"></span> Simulation active</span>
+        <div class="profile">
+          <div class="avatar">{{ user.name[:1]|upper }}</div>
+          <div><div class="profile-name">{{ user.name }}</div><div class="profile-caption">Demo account</div></div>
+        </div>
+        <form method="POST" action="{{ url_for('logout') }}">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <button class="btn btn-light btn-small" type="submit">Sign out</button>
         </form>
+      </div>
+    </header>
 
-        <p>Don't have an account?
-            <a href="{{ url_for('register') }}">Register here</a>
-        </p>
+    <div class="page-wrap">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}<div class="flash {{ category }}">{{ message }}</div>{% endfor %}
+      {% endwith %}
 
-    {% else %}
+      {% if page == 'dashboard' %}
+      <div class="page-heading">
+        <div><div class="eyebrow">ACCOUNT OVERVIEW</div><h1>Good to see you, {{ user.name }}.</h1><p class="subtitle">Here's what's happening with your demo finances today.</p></div>
+        <span class="pill">● Account active</span>
+      </div>
 
-        <form method="POST">
+      <div class="grid">
+        <div class="card metric-card hero-card">
+          <div class="metric-top"><span class="metric-label">Available cash balance</span><span class="metric-icon">₹</span></div>
+          <div class="metric-value">{{ money(user.balance) }}</div>
+          <div class="metric-foot">Ready to use for simulated trades</div>
+        </div>
+        <div class="card metric-card">
+          <div class="metric-top"><span class="metric-label">Portfolio market value</span><span class="metric-icon">◫</span></div>
+          <div class="metric-value">{{ money(portfolio_value) }}</div>
+          <div class="metric-foot">Current value of your open positions</div>
+        </div>
+        <div class="card metric-card">
+          <div class="metric-top"><span class="metric-label">Unrealized profit / loss</span><span class="metric-icon">↗</span></div>
+          <div class="metric-value {{ 'positive' if profit_loss >= 0 else 'negative' }}">{{ money(profit_loss) }}</div>
+          <div class="metric-foot">{% if profit_loss >= 0 %}Above{% else %}Below{% endif %} your average purchase cost</div>
+        </div>
+      </div>
 
+      <div class="content-grid">
+        <section class="card">
+          <div class="section-head"><div><h2>Portfolio holdings</h2><p class="subtitle" style="margin-top:5px">A snapshot of your open positions</p></div><a class="section-link" href="{{ url_for('portfolio') }}">View portfolio →</a></div>
+          <div class="table-wrap"><table>
+            <thead><tr><th>Asset</th><th>Units</th><th>Avg. cost</th><th>Market value</th></tr></thead>
+            <tbody>
+            {% for h in holdings %}
+            <tr><td><div class="stock-cell"><div class="stock-badge">{{ h.symbol[:2] }}</div><div><div class="stock-name">{{ market[h.symbol].name }}</div><div class="stock-symbol">{{ h.symbol }}</div></div></div></td><td>{{ h.quantity }}</td><td>{{ money(h.average_price) }}</td><td style="font-weight:700;color:#26384b">{{ money(h.quantity * market[h.symbol].price) }}</td></tr>
+            {% else %}<tr><td colspan="4" class="empty">No holdings yet. Explore the market to make your first simulated trade.</td></tr>{% endfor %}
+            </tbody>
+          </table></div>
+        </section>
+        <section class="card">
+          <div class="section-head"><div><h2>Add demo funds</h2><p class="subtitle" style="margin-top:5px">Top up your simulated cash balance</p></div><span class="metric-icon">＋</span></div>
+          <form method="POST" action="{{ url_for('deposit') }}">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="field"><label>Amount in INR</label><input type="number" name="amount" min="1" max="100000" step="0.01" placeholder="e.g. 5000" required></div>
+            <button class="btn btn-primary" type="submit">Add demo funds →</button>
+          </form>
+          <div class="notice">This action creates simulated funds only. It does not connect to a bank or payment gateway.</div>
+          <div class="quick-actions"><a class="btn btn-light" href="{{ url_for('stock_market') }}">Explore market</a><a class="btn btn-light" href="{{ url_for('transaction_history') }}">Activity history</a></div>
+        </section>
+      </div>
 
-            <label>Your name</label>
-            <input type="text" name="name" placeholder="Your name" required>
+      <section class="card">
+        <div class="section-head"><div><h2>Recent activity</h2><p class="subtitle" style="margin-top:5px">Your latest account transactions</p></div><a class="section-link" href="{{ url_for('transaction_history') }}">All transactions →</a></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Type</th><th>Asset</th><th>Quantity</th><th>Total value</th><th>Timestamp</th></tr></thead>
+          <tbody>{% for t in transactions %}
+          <tr><td><span class="pill {{ 'down' if t.transaction_type == 'BUY' else '' }}">{{ t.transaction_type }}</span></td><td>{{ t.symbol }}</td><td>{{ t.quantity }}</td><td style="font-weight:700">{{ money(t.total) }}</td><td class="muted">{{ t.created_at }}</td></tr>
+          {% else %}<tr><td colspan="5" class="empty">No activity to display.</td></tr>{% endfor %}</tbody>
+        </table></div>
+      </section>
 
-            <label>Email address</label>
-            <input type="email" name="email" placeholder="Your email" required>
-
-            <label>Password (minimum 8 characters)</label>
-            <input type="password" name="password" minlength="8" required>
-
-            <button type="submit">Create account</button>
-
-        </form>
-
-        <p>Already registered?
-            <a href="{{ url_for('login') }}">Login here</a>
-        </p>
-
-    {% endif %}
-
-</div>
-
-
-{% elif page == 'dashboard' %}
-
-<div class="container">
-
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% for category, message in messages %}
-            <div class="flash {{ category }}">{{ message }}</div>
-        {% endfor %}
-    {% endwith %}
-
-    <h1>Hello, {{ user.name }}! 💗</h1>
-    <p class="subtitle">Welcome to your Bubu × Dudu financial universe.</p>
-
-    <div class="grid">
-
-        <div class="card">
-            <h3>AVAILABLE BANK BALANCE</h3>
-            <div class="amount">{{ money(user.balance) }}</div>
-        </div>
-
-        <div class="card">
-            <h3>STOCK PORTFOLIO VALUE</h3>
-            <div class="amount pink">{{ money(portfolio_value) }}</div>
-        </div>
-
-        <div class="card">
-            <h3>INVESTMENT UNREALIZED P/L</h3>
-            <div class="amount {{ 'green' if profit_loss >= 0 else 'red' }}">
-                {{ money(profit_loss) }}
-            </div>
-        </div>
-
-    </div>
-
-    <div class="grid">
-
-        <div class="card">
-
-            <h3>ADD DEMO MONEY</h3>
-
-            <form method="POST" action="{{ url_for('deposit') }}">
-
-                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-                <label>Deposit amount (₹)</label>
-                <input type="number" name="amount" min="1" max="100000"
-                       step="0.01" placeholder="Enter amount" required>
-
-                <button type="submit">Add demo money</button>
-
-            </form>
-
-            <p class="small">This is simulated money, not a real bank transfer.</p>
-
-        </div>
-
-        <div class="card">
-
-            <h3>QUICK ACTIONS</h3>
-
-            <div class="actions">
-                <a class="button" href="{{ url_for('stock_market') }}">Explore stocks</a>
-                <a class="button" href="{{ url_for('portfolio') }}">My portfolio</a>
-            </div>
-
-        </div>
-
-    </div>
-
-    <h2>My Holdings</h2>
-
-    <div class="table-wrap">
-        <table>
-            <tr>
-                <th>Stock</th>
-                <th>Quantity</th>
-                <th>Average Price</th>
-                <th>Current Value</th>
-            </tr>
-
-            {% for h in holdings %}
-            <tr>
-                <td>{{ h.symbol }}</td>
-                <td>{{ h.quantity }}</td>
-                <td>{{ money(h.average_price) }}</td>
-                <td>{{ money(h.quantity * market[h.symbol].price) }}</td>
-            </tr>
+      {% elif page == 'market' %}
+      <div class="page-heading"><div><div class="eyebrow">INVESTMENT EXPLORER</div><h1>Market watch</h1><p class="subtitle">Browse available instruments and place simulated orders.</p></div><div class="card" style="padding:12px 16px"><div class="metric-label">AVAILABLE CASH</div><div class="balance-large">{{ money(user.balance) }}</div></div></div>
+      <section class="card">
+        <div class="section-head"><div><h2>Available instruments</h2><p class="subtitle" style="margin-top:5px">Prices shown are fixed demo values</p></div><span class="pill">10 instruments</span></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Company</th><th>Symbol</th><th>Demo price</th><th>Change</th><th>Order quantity</th><th>Watchlist</th></tr></thead>
+          <tbody>{% for symbol, stock in market.items() %}
+          <tr>
+            <td><div class="stock-cell"><div class="stock-badge">{{ symbol[:2] }}</div><div class="stock-name">{{ stock.name }}</div></div></td>
+            <td><strong>{{ symbol }}</strong></td><td style="font-weight:700">{{ money(stock.price) }}</td>
+            <td><span class="pill {{ 'down' if stock.change < 0 else '' }}">{{ '+' if stock.change > 0 else '' }}{{ stock.change }}%</span></td>
+            <td><form class="inline-form" method="POST" action="{{ url_for('buy_stock') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="symbol" value="{{ symbol }}"><input class="qty" type="number" name="quantity" min="1" max="100000" value="1" required><button class="btn btn-primary btn-small" type="submit">Buy</button></form></td>
+            <td>{% if symbol in watch_symbols %}
+              <form method="POST" action="{{ url_for('remove_watchlist') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="symbol" value="{{ symbol }}"><button class="btn btn-light btn-small" type="submit">Remove</button></form>
             {% else %}
-            <tr><td colspan="4">No stocks purchased yet.</td></tr>
-            {% endfor %}
+              <form method="POST" action="{{ url_for('add_watchlist') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="symbol" value="{{ symbol }}"><button class="btn btn-light btn-small" type="submit">＋ Watch</button></form>
+            {% endif %}</td>
+          </tr>{% endfor %}</tbody>
+        </table></div>
+        <div class="notice">Market prices and percentage changes are illustrative placeholders, not live NSE/BSE quotes. Orders are not routed to an exchange.</div>
+      </section>
 
-        </table>
+      {% elif page == 'portfolio' %}
+      <div class="page-heading"><div><div class="eyebrow">YOUR INVESTMENTS</div><h1>My portfolio</h1><p class="subtitle">Track position values and unrealized performance.</p></div><a class="btn btn-primary" href="{{ url_for('stock_market') }}">＋ Find investments</a></div>
+      <div class="grid">
+        <div class="card metric-card"><div class="metric-label">Total market value</div><div class="metric-value">{{ money(total_value) }}</div><div class="metric-foot">Value at current demo prices</div></div>
+        <div class="card metric-card"><div class="metric-label">Total invested cost</div><div class="metric-value">{{ money(total_cost) }}</div><div class="metric-foot">Cost basis of open positions</div></div>
+        <div class="card metric-card"><div class="metric-label">Unrealized P/L</div><div class="metric-value {{ 'positive' if profit_loss >= 0 else 'negative' }}">{{ money(profit_loss) }}</div><div class="metric-foot">Excludes realized gains and losses</div></div>
+      </div>
+      <section class="card">
+        <div class="section-head"><div><h2>Open positions</h2><p class="subtitle" style="margin-top:5px">Sell shares from an existing position</p></div></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Asset</th><th>Quantity</th><th>Average cost</th><th>Market price</th><th>Market value</th><th>Unrealized P/L</th><th>Sell</th></tr></thead>
+          <tbody>{% for h in holdings %}
+          <tr>
+            <td><div class="stock-cell"><div class="stock-badge">{{ h.symbol[:2] }}</div><div><div class="stock-name">{{ h.name }}</div><div class="stock-symbol">{{ h.symbol }}</div></div></div></td>
+            <td>{{ h.quantity }}</td><td>{{ money(h.average_price) }}</td><td>{{ money(h.market_price) }}</td><td style="font-weight:700">{{ money(h.value) }}</td>
+            <td class="{{ 'positive' if h.profit_loss >= 0 else 'negative' }}">{{ money(h.profit_loss) }}</td>
+            <td><form class="inline-form" method="POST" action="{{ url_for('sell_stock') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="symbol" value="{{ h.symbol }}"><input class="qty" type="number" name="quantity" min="1" max="{{ h.quantity }}" value="1" required><button class="btn btn-danger btn-small" type="submit">Sell</button></form></td>
+          </tr>
+          {% else %}<tr><td colspan="7" class="empty">Your portfolio is empty. Visit the market to buy your first demo shares.</td></tr>{% endfor %}</tbody>
+        </table></div>
+      </section>
+
+      {% elif page == 'transactions' %}
+      <div class="page-heading"><div><div class="eyebrow">ACCOUNT ACTIVITY</div><h1>Transactions</h1><p class="subtitle">A complete record of deposits and simulated stock orders.</p></div></div>
+      <section class="card">
+        <div class="section-head"><div><h2>Transaction ledger</h2><p class="subtitle" style="margin-top:5px">Most recent activity appears first</p></div></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Transaction</th><th>Instrument</th><th>Quantity</th><th>Unit price</th><th>Total amount</th><th>Date & time</th></tr></thead>
+          <tbody>{% for t in transactions %}
+          <tr><td><span class="pill {{ 'down' if t.transaction_type == 'BUY' else '' }}">{{ t.transaction_type }}</span></td><td><strong>{{ t.symbol }}</strong></td><td>{{ t.quantity }}</td><td>{{ money(t.price) }}</td><td style="font-weight:700">{{ money(t.total) }}</td><td class="muted">{{ t.created_at }}</td></tr>
+          {% else %}<tr><td colspan="6" class="empty">No transactions have been recorded yet.</td></tr>{% endfor %}</tbody>
+        </table></div>
+      </section>
+      {% endif %}
+
+      <div class="footer">Bubu Finance © {{ year }} · Educational simulation only · No real money or securities are involved</div>
     </div>
-
-    <h2 style="margin-top:30px">Recent Transactions</h2>
-
-    <div class="table-wrap">
-        <table>
-            <tr>
-                <th>Type</th>
-                <th>Stock</th>
-                <th>Quantity</th>
-                <th>Total</th>
-                <th>Date</th>
-            </tr>
-
-            {% for t in transactions %}
-            <tr>
-                <td>{{ t.transaction_type }}</td>
-                <td>{{ t.symbol }}</td>
-                <td>{{ t.quantity }}</td>
-                <td>{{ money(t.total) }}</td>
-                <td>{{ t.created_at }}</td>
-            </tr>
-            {% else %}
-            <tr><td colspan="5">No transactions yet.</td></tr>
-            {% endfor %}
-
-        </table>
-    </div>
-
+  </main>
 </div>
-
-
-{% elif page == 'market' %}
-
-<div class="container">
-
-    <h1>📈 Stock Market</h1>
-    <p class="subtitle">Explore stocks and make simulated trades.</p>
-
-    <div class="card">
-        <h3>AVAILABLE BALANCE</h3>
-        <div class="amount">{{ money(user.balance) }}</div>
-    </div>
-
-    <div class="table-wrap">
-
-        <table>
-
-            <tr>
-                <th>Company</th>
-                <th>Symbol</th>
-                <th>Price</th>
-                <th>Change</th>
-                <th>Buy</th>
-                <th>Watchlist</th>
-            </tr>
-
-            {% for symbol, stock in market.items() %}
-
-            <tr>
-
-                <td>{{ stock.name }}</td>
-
-                <td class="stock-symbol">{{ symbol }}</td>
-
-                <td>{{ money(stock.price) }}</td>
-
-                <td class="{{ 'green' if stock.change >= 0 else 'red' }}">
-                    {{ stock.change }}%
-                </td>
-
-                <td>
-
-                    <form method="POST" action="{{ url_for('buy_stock') }}">
-
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <input type="hidden" name="symbol" value="{{ symbol }}">
-
-                        <input type="number" name="quantity" min="1"
-                               max="100000" value="1" required
-                               style="width:65px;margin:0">
-
-                        <button type="submit">Buy</button>
-
-                    </form>
-
-                </td>
-
-                <td>
-
-                    {% if symbol in watch_symbols %}
-
-                    <form method="POST" action="{{ url_for('remove_watchlist') }}">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <input type="hidden" name="symbol" value="{{ symbol }}">
-                        <button class="secondary">Remove</button>
-                    </form>
-
-                    {% else %}
-
-                    <form method="POST" action="{{ url_for('add_watchlist') }}">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <input type="hidden" name="symbol" value="{{ symbol }}">
-                        <button class="secondary">+ Watch</button>
-                    </form>
-
-                    {% endif %}
-
-                </td>
-
-            </tr>
-
-            {% endfor %}
-
-        </table>
-
-    </div>
-
-    <p class="small" style="margin-top:15px">
-        Prices are simulated demonstration values. They are not live NSE or BSE prices.
-    </p>
-
-</div>
-
-
-{% elif page == 'portfolio' %}
-
-<div class="container">
-
-    <h1>💼 My Portfolio</h1>
-    <p class="subtitle">Track your stock investments.</p>
-
-    <div class="grid">
-
-        <div class="card">
-            <h3>PORTFOLIO VALUE</h3>
-            <div class="amount">{{ money(total_value) }}</div>
-        </div>
-
-        <div class="card">
-            <h3>INVESTED AMOUNT</h3>
-            <div class="amount">{{ money(total_cost) }}</div>
-        </div>
-
-        <div class="card">
-            <h3>UNREALIZED PROFIT / LOSS</h3>
-            <div class="amount {{ 'green' if profit_loss >= 0 else 'red' }}">
-                {{ money(profit_loss) }}
-            </div>
-        </div>
-
-    </div>
-
-    <div class="table-wrap">
-
-        <table>
-
-            <tr>
-                <th>Stock</th>
-                <th>Quantity</th>
-                <th>Average Price</th>
-                <th>Market Price</th>
-                <th>Current Value</th>
-                <th>P/L</th>
-                <th>Sell</th>
-            </tr>
-
-            {% for h in holdings %}
-
-            <tr>
-
-                <td>{{ h.name }} ({{ h.symbol }})</td>
-                <td>{{ h.quantity }}</td>
-                <td>{{ money(h.average_price) }}</td>
-                <td>{{ money(h.market_price) }}</td>
-                <td>{{ money(h.value) }}</td>
-
-                <td class="{{ 'green' if h.profit_loss >= 0 else 'red' }}">
-                    {{ money(h.profit_loss) }}
-                </td>
-
-                <td>
-
-                    <form method="POST" action="{{ url_for('sell_stock') }}">
-
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                        <input type="hidden" name="symbol" value="{{ h.symbol }}">
-
-                        <input type="number" name="quantity" min="1"
-                               max="{{ h.quantity }}" value="1"
-                               required style="width:65px;margin:0">
-
-                        <button class="danger" type="submit">Sell</button>
-
-                    </form>
-
-                </td>
-
-            </tr>
-
-            {% else %}
-
-            <tr><td colspan="7">Your portfolio is empty. Visit the market to buy stocks.</td></tr>
-
-            {% endfor %}
-
-        </table>
-
-    </div>
-
-</div>
-
-
-{% elif page == 'transactions' %}
-
-<div class="container">
-
-    <h1>📋 Transaction History</h1>
-    <p class="subtitle">All your banking and trading activity.</p>
-
-    <div class="table-wrap">
-
-        <table>
-
-            <tr>
-                <th>Type</th>
-                <th>Symbol</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th>Total</th>
-                <th>Date</th>
-            </tr>
-
-            {% for t in transactions %}
-
-            <tr>
-                <td>{{ t.transaction_type }}</td>
-                <td>{{ t.symbol }}</td>
-                <td>{{ t.quantity }}</td>
-                <td>{{ money(t.price) }}</td>
-                <td>{{ money(t.total) }}</td>
-                <td>{{ t.created_at }}</td>
-            </tr>
-
-            {% else %}
-
-            <tr><td colspan="6">No transactions found.</td></tr>
-
-            {% endfor %}
-
-        </table>
-
-    </div>
-
-</div>
-
 {% endif %}
-
-
-<footer>
-    Bubu × Dudu Bank & Trading Universe © {{ year }}
-    <br>
-    Educational simulation only. No real money or securities are involved.
-</footer>
-
 </body>
 </html>
 """
