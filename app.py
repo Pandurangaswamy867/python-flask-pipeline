@@ -1,3 +1,4 @@
+#this is krushna deploying flask
 #Hello dudu this is bubu how are you 
 import os
 import sqlite3
